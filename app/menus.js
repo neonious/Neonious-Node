@@ -1,8 +1,11 @@
 "use strict";
 
-const { BrowserWindow, Menu, app, shell, autoUpdater } = require('electron');
+const { BrowserWindow, Menu, app, shell } = require('electron');
 
-exports.build = (ui) => {
+let autoUpdater;
+
+exports.build = (ui, _autoUpdater) => {
+	autoUpdater = _autoUpdater;
     let template = [process.platform == 'darwin' ? {
         label: 'File',
         submenu: [{
@@ -130,12 +133,14 @@ exports.build = (ui) => {
         const version = app.getVersion()
         let updateItems = [{
             label: 'Checking for Update',
+            visible: false,
             enabled: false,
-            key: 'checkingForUpdate'
+            id: 'checkingForUpdate'
         }, {
             label: 'Check for Update',
-            visible: false,
-            key: 'checkForUpdate',
+            visible: true,
+            enabled: true,
+            id: 'checkForUpdate',
             click: () => {
                 autoUpdater.checkForUpdates()
             }
@@ -143,7 +148,7 @@ exports.build = (ui) => {
             label: 'Restart and Install Update',
             enabled: true,
             visible: false,
-            key: 'restartToUpdate',
+            id: 'restartToUpdate',
             click: () => {
                 autoUpdater.quitAndInstall()
             }
@@ -204,5 +209,42 @@ exports.build = (ui) => {
         addUpdateMenuItems(helpMenu, 0);
     }
 
-    return Menu.buildFromTemplate(template);
+    let menu = Menu.buildFromTemplate(template);
+    autoUpdater.on('checking-for-update', () => {
+        Menu.getApplicationMenu().getMenuItemById('restartToUpdate').visible = false;
+        Menu.getApplicationMenu().getMenuItemById('checkForUpdate').visible = false;
+        Menu.getApplicationMenu().getMenuItemById('checkingForUpdate').visible = true;
+        Menu.getApplicationMenu().getMenuItemById('checkingForUpdate').enabled = false;
+    });
+    autoUpdater.on('update-not-available', () => {
+        Menu.getApplicationMenu().getMenuItemById('checkingForUpdate').visible = false;
+        Menu.getApplicationMenu().getMenuItemById('restartToUpdate').visible = false;
+        Menu.getApplicationMenu().getMenuItemById('checkForUpdate').visible = true;
+        Menu.getApplicationMenu().getMenuItemById('checkForUpdate').enabled = true;
+    });
+    autoUpdater.on('update-downloaded', (info) => {
+        let messageBoxOptions = {
+            type: "question",
+            buttons: [
+                "Install",
+                "Cancel"
+            ],
+            defaultId: 0,
+            cancelId: 1,
+            title: "Version " + info.version + " ready to install",
+            message: "An update of the Neonious Node software was downloaded and ready to be installed. Keeping the software up-to-date ensures that you can always accept paid simulations.\n\nDo you wish to restart to install the new version?"
+           }
+          
+           Menu.getApplicationMenu().getMenuItemById('checkingForUpdate').visible = false;
+           Menu.getApplicationMenu().getMenuItemById('checkForUpdate').visible = false;
+           Menu.getApplicationMenu().getMenuItemById('restartToUpdate').visible = true;
+           Menu.getApplicationMenu().getMenuItemById('restartToUpdate').enabled = true;
+
+           dialog.showMessageBox(win, messageBoxOptions, (responseIndex) => {
+            if (responseIndex === messageBoxOptions.defaultId) {
+             autoUpdater.quitAndInstall()
+            }
+        })
+    });
+    return menu;
 }

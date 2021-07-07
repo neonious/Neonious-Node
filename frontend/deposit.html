@@ -62,7 +62,7 @@
         }
 
         const params = JSON.parse(decodeURIComponent(location.search.substr(1))); // skip ?
-        params.serverStatus.deposit_pay_out_pending= false;
+
         Vue.use(BootstrapVue);
         const App = new Vue({
             el: '#app',
@@ -108,10 +108,8 @@
         });
 
         window.onBackend((event, param) => {
-            if(event == 'serverStatusChanged') {
-                param.deposit_pay_out_pending= false;
+            if(event == 'serverStatusChanged')
                 App._data.serverStatus = param;
-            }
         });
     </script>
 </body>

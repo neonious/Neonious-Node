@@ -5,19 +5,25 @@ const settings = require('./settings.js');
 const ui = require('./ui.js');
 const menus = require('./menus.js');
 const job = require('./job.js');
+let electron = require('electron');
 
 const { app, Menu } = require('electron')
+
+const autoUpdater = require('electron-updater').autoUpdater;
+autoUpdater.autoDownload = true;
+autoUpdater.autoInstallOnAppQuit = true;
+setInterval(() => {
+    autoUpdater.checkForUpdates();
+}, 60 * 60 * 1000);
+autoUpdater.checkForUpdates();
 
 if (!app.requestSingleInstanceLock()) {
     app.quit();
     return;
 }
 
-if (process.platform == 'win32')        // we do not have a code signing certificate for macOS yet
-    require('update-electron-app')();
-
 app.on('ready', async () => {
-    Menu.setApplicationMenu(menus.build(ui));
+    Menu.setApplicationMenu(menus.build(ui, autoUpdater));
 
     await settings.init(server);
     ui.init(settings, server, job);
