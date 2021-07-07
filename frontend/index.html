@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link type="text/css" rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+  <link type="text/css" rel="stylesheet" href="node_modules/bootstrap-vue/dist/bootstrap-vue.min.css">
+
+  <script type="text/javascript" src="node_modules/jquery/dist/jquery.min.js"></script>
+  <script type="text/javascript" src="node_modules/vue/dist/vue.min.js"></script>
+  <script type="text/javascript" src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="node_modules/bootstrap-vue/dist/bootstrap-vue.min.js"></script>
+
+  <style type="text/css">
+    body {
+      overflow-x: hidden;
+    }
+
+    .led-green {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-right: 5px;
+      background-color: #ABFF00;
+      border-radius: 50%;
+      box-shadow: rgba(0, 0, 0, 0.2) 0 -1px 3px 1px, inset #304701 0 -1px 4px, #89FF00 0 1px 6px;
+    }
+
+    .led-green-blink {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-right: 5px;
+      background-color: #ABFF00;
+      border-radius: 50%;
+      box-shadow: rgba(0, 0, 0, 0.2) 0 -1px 3px 1px, inset #304701 0 -1px 4px, #89FF00 0 1px 6px;
+      animation: blinkGreen 0.5s infinite;
+    }
+
+    @keyframes blinkGreen {
+      from {
+        background-color: #0F0;
+      }
+
+      50% {
+        background-color: #0A0;
+        box-shadow: rgba(0, 0, 0, 0.2) 0 -1px 3px 1px, inset #304701 0 -1px 4px, #89FF00 0 1px 6px;
+      }
+
+      to {
+        background-color: #0F0;
+      }
+    }
+
+    .led-yellow {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-right: 5px;
+      background-color: #FF0;
+      border-radius: 50%;
+      box-shadow: rgba(0, 0, 0, 0.2) 0 -1px 3px 1px, inset #808002 0 -1px 4px, #FF0 0 1px 6px;
+    }
+
+    .led-red {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-right: 5px;
+      background-color: #F00;
+      border-radius: 50%;
+      box-shadow: rgba(0, 0, 0, 0.2) 0 -1px 3px 1px, inset #441313 0 -1px 4px, rgba(255, 0, 0, 0.5) 0 1px 6px;
+    }
+
+    .item-red {
+      color: red
+    }
+
+    .item-green {
+      color: darkgreen
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <div class="row" style="background-color: #eee; padding-left: 20px; padding-right: 20px">
+      <div class="col" style="padding: 20px">
+        <div v-if="depositFormatted">
+          <b>Deposit:</b> {{depositFormatted}} MDSIM<br><small>({{depositUSDFormatted}} USD<span
+              v-if="depositGrowthFormatted" style="color: darkgreen">{{depositGrowthFormatted}}</span>)</small>
+        </div>
+        <div v-if="!depositFormatted">
+          <b>Deposit:</b> not set up
+        </div>
+      </div>
+      <div class="col" style="padding: 20px; text-align: center">
+        <div style="margin-bottom: 10px"><b>Still to be paid out:</b> {{payOutFormatted}} MDSIM</div>
+        <div v-if="running">
+          <div class="led-green-blink"></div> Running simulation
+        </div>
+        <div v-if="!running && !settingsData.invitationCode">
+          <div class="led-red"></div> Need settings to accept paid work
+        </div>
+        <div v-if="!running && settingsData.invitationCode && settingsData.liveMode">
+          <div v-if="!serverStatus.is_live && serverStatus.status_msg" class="led-red"></div>
+          <div v-if="serverStatus.is_live || !serverStatus.status_msg" class="led-green"></div>
+          <span v-if="serverStatus.status_msg">{{serverStatus.status_msg}}</span>
+          <span v-if="!serverStatus.status_msg">Node is live</span>
+        </div>
+        <div v-if="!running && settingsData.invitationCode && !settingsData.liveMode">
+          <div class="led-yellow"></div> Not accepting paid work on user's wish
+        </div>
+      </div>
+      <div class="col" style="padding: 20px; text-align: right">
+        <b-form-checkbox switch v-model="settingsLiveMode">Accept paid work from network</b-form-checkbox>
+      </div>
+    </div>
+    <div v-if="!settingsData.invitationCode" class="alert alert-primary" style="margin: 0" role="alert">Welcome to our
+      software Neonious Node. As a first step, please give us the needed information to start.
+      <button class="btn btn-primary" style="margin-left: 10px" @click="openSettings">Open Settings</button>
+    </div>
+    <div
+      v-if="settingsData.invitationCode && serverStatus.deposit_MDSIM !== undefined && serverStatus.deposit_MDSIM < serverStatus.deposit_MDSIM_needed"
+      class="alert alert-primary" style="margin: 0" role="alert">To receive paid simulation work, you need to set up
+      your deposit.
+      <button class="btn btn-primary" style="margin-left: 10px" @click="openDeposit">Show Why and How</button>
+    </div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th style="background-color: #ddd; position: sticky; top: 0">Start Time</th>
+          <th style="background-color: #ddd; position: sticky; top: 0">End Time</th>
+          <th style="background-color: #ddd; position: sticky; top: 0">Type</th>
+          <th style="background-color: #ddd; position: sticky; top: 0">Result</th>
+          <th style="background-color: #ddd; position: sticky; top: 0; text-align: right">Earned</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-if="!this.running">
+          <td colspan="3">There is currently no active job. Make sure your software will work when the time comes.</td>
+          <td colspan="2">
+            <button class="btn btn-primary" @click="testDock">Test Docking Sim (small)</button>
+            <button class="btn btn-primary" style="margin-left: 10px" @click="testMD">Test MD Sim (more data)</button>
+          </td>
+        </tr>
+        <tr v-for="item in log.slice().reverse()">
+          <td class="text-nowrap">{{item.start}}</td>
+          <td class="text-nowrap" v-if="item.end">{{item.end}}</td>
+          <td class="text-nowrap" v-if="!item.end"><i>on-going</i></td>
+          <td class="text-nowrap">{{item.type}}</td>
+          <td v-if="item.end" :class="item.result_success ? 'item-green' : 'item-red'">{{item.result}}</td>
+          <td v-if="!item.end">{{item.result}}</td>
+          <td class="text-nowrap" v-if="item.end" style="text-align: right">{{item.earnedFormatted}} MDSIM</td>
+          <td class="text-nowrap" v-if="!item.end" style="text-align: right"><button class="btn btn-danger" @click="abortSim">Abort Running Simulation</button></td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+  <script>
+    function formatNo(no, sub_digits) {
+      const CONTINENTAL = false;
+
+      const sub = no < 0;
+      if (sub)
+        no = -no;
+
+      let val;
+      if (CONTINENTAL)
+        val = ((no | 0) + '').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+      else
+        val = ((no | 0) + '').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+      if (sub_digits) {
+        const subDigits = (no - (no | 0)).toFixed(sub_digits);
+        if (subDigits == 1) {
+          no = (no | 0) + 1;
+          if (CONTINENTAL)
+            val = ((no | 0) + '').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+          else
+            val = ((no | 0) + '').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+        }
+        val += (CONTINENTAL ? ',' : '.') + subDigits.substr(2);
+      }
+      if (sub)
+        val = '-' + val;
+
+      return val;
+    }
+
+    const params = JSON.parse(decodeURIComponent(location.search.substr(1))); // skip ?
+
+    Vue.use(BootstrapVue);
+    const App = new Vue({
+      el: '#app',
+      data: {
+        settingsData: params.settingsData,
+        settingsLiveMode: params.settingsData.liveMode,
+        serverStatus: params.serverStatus,
+        log: params.log,
+        running: params.log.length && !params.log[params.log.length - 1].end
+      },
+      watch: {
+        settingsLiveMode: function (val) {
+          sendBackend('liveMode', val);
+        }
+      },
+      computed: {
+        depositFormatted: function () {
+          return this.serverStatus.deposit_MDSIM === undefined ? undefined : formatNo(this.serverStatus.deposit_MDSIM, 2);
+        },
+        depositUSDFormatted: function () {
+          return this.serverStatus.deposit_USD === undefined ? undefined : formatNo(this.serverStatus.deposit_USD, 2);
+        },
+        depositGrowthFormatted: function () {
+          if (this.serverStatus.deposit_USD_start === undefined)
+            return;
+
+          let start = Math.round(this.serverStatus.deposit_USD_start * 100);
+          let now = Math.round(this.serverStatus.deposit_USD * 100);
+          return !start || start > now ? undefined : ', +' + formatNo((now / start - 1) * 100, 2) + ' % since transfer';
+        },
+        payOutFormatted: function () {
+          return formatNo(this.serverStatus.pay_out_pending === undefined ? 0 : this.serverStatus.pay_out_pending, 2);
+        }
+      },
+      methods: {
+        openSettings: () => {
+          sendBackend('openSettings');
+        },
+        openDeposit: () => {
+          sendBackend('openDeposit');
+        },
+        testDock: () => {
+          sendBackend('test', 'dock');
+        },
+        testMD: () => {
+          sendBackend('test', 'md');
+        },
+        abortSim: () => {
+          if(confirm("Are you sure you wish to abort the simulation? If this is a paid simulation, this will result into no MDSIMs earned."))
+            sendBackend('abortSim');
+        }
+      }
+    });
+
+    window.onBackend((event, param) => {
+      if (event == 'settingsSet')
+        App._data.settingsData = param;
+      if (event == 'logChanged') {
+        App._data.log = param;
+        App._data.running = param.length && !param[param.length - 1].end;
+      }
+      if (event == 'serverStatusChanged')
+        App._data.serverStatus = param;
+    });
+  </script>
+</body>
+
+</html>

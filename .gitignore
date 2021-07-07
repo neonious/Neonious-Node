@@ -1,0 +1,14 @@
+.DS_Store
+/.vscode
+
+/_old/
+/deps/autogrid/
+/deps/autodock/
+/engine/
+
+node_modules/
+
+/dist/
+
+*.d
+*.o

@@ -1,0 +1,6 @@
+[submodule "deps/gromacs"]
+	path = deps/gromacs
+	url = https://github.com/gromacs/gromacs
+[submodule "deps/AutoDock-GPU"]
+	path = deps/AutoDock-GPU
+	url = https://github.com/neonious/AutoDock-GPU

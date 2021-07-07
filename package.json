@@ -1,0 +1,41 @@
+{
+  "name": "neoniousnode",
+  "productName": "Neonious Node",
+  "version": "0.9.0",
+  "description": "",
+  "author": "Neonious GmbH",
+  "license": "MIT",
+  "scripts": {
+    "clean": "rm -Rf dist",
+    "dist": "electron-builder",
+    "start": "export DEBUG=1 || set DEBUG=1&& electron app"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/neonious/Neonious-Node.git"
+  },
+  "build": {
+    "appId": "com.neonious.node",
+    "mac": {
+      "category": "public.app-category.medical",
+      "icon": "setup/app-icon.icns"
+    },
+    "win": {
+      "icon": "setup/app-icon.png",
+      "certificateFile": "../code.pfx",
+      "certificateSubjectName": "CN=Neonious GmbH, O=Neonious GmbH, L=D�sseldorf, S=Nordrhein-Westfalen, C=DE"
+    },
+    "extraResources": [
+      "frontend",
+      "engine"
+    ]
+  },
+  "devDependencies": {
+    "electron": "^13.1.4",
+    "electron-builder": "^22.11.7",
+    "electron-rebuild": "^2.3.5"
+  },
+  "dependencies": {
+    "socket.io-client": "^4.1.2"
+  }
+}

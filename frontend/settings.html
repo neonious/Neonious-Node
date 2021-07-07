@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link type="text/css" rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" href="node_modules/bootstrap-vue/dist/bootstrap-vue.min.css">
+
+    <script type="text/javascript" src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="node_modules/vue/dist/vue.min.js"></script>
+    <script type="text/javascript" src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="node_modules/bootstrap-vue/dist/bootstrap-vue.min.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <div style="padding: 20px">
+            <form @submit="settingsSet">
+                <div class="form-group">
+                    <label for="invitationCodeInput">Invitation Code</label>
+                    <input class="form-control" :class="{ 'is-invalid' : invitationCodeErr}" id="invitationCodeInput" aria-describedby="invitationCodeHelp"
+                        placeholder="" v-model.trim="invitationCode">
+                    <small id="invitationCodeHelp" class="form-text text-muted">Please enter the code you received from
+                        the person who invited you to the program.</small>
+                </div>
+                <div class="form-group">
+                    <label for="walletAddrInput">Wallet Address</label>
+                    <input class="form-control" :class="{ 'is-invalid' : walletAddrErr}" id="walletAddrInput" aria-describedby="walletAddrHelp" placeholder="0x..."
+                        v-model.trim="walletAddr">
+                    <small id="walletAddrHelp" class="form-text text-muted">Please enter the Ethereum address where you
+                        would like to receive the earned MDSIMs.</small>
+                </div>
+                <div class="form-group">
+                    <label for="emailInput">E-Mail Address</label>
+                    <input class="form-control" :class="{ 'is-invalid' : emailErr}" id="emailInput" aria-describedby="emailHelp"
+                        placeholder="" v-model.trim="email">
+                    <small id="emailHelp" class="form-text text-muted">Optionally enter your e-mail address to receive notifications per mail.</small>
+                </div>
+                <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" id="systemStartInput" v-model="systemStart">
+                    <label class="form-check-label" for="systemStartInput">Launch on system start</label>
+                </div>
+                <button type="submit" class="btn btn-success" style="float: right">Apply</button>
+                <button class="btn btn-secondary" @click="settingsClose">Cancel</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        const params = JSON.parse(decodeURIComponent(location.search.substr(1))); // skip ?
+
+        function check_mail_addr(mail) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail);
+        }
+
+        Vue.use(BootstrapVue);
+        const App = new Vue({
+            el: '#app',
+            data: {
+                invitationCode: params.data.invitationCode ? params.data.invitationCode : '',
+                walletAddr: params.data.walletAddr ? params.data.walletAddr : '',
+                email: params.data.email ? params.data.email : '',
+                systemStart: params.data.systemStart !== undefined ? params.data.systemStart : true,
+                invitationCodeErr: false,
+                walletAddrErr: false,
+                emailErr: false
+            },
+            methods: {
+                settingsClose: () => {
+                    window.sendBackend('settingsClose');
+                },
+                settingsSet: function(e) {
+                    e.preventDefault();
+
+                    this.invitationCodeErr = false;
+                    this.walletAddrErr = false;
+
+                    let err = false;
+                    if(this.invitationCode.length != 8) {
+                        this.invitationCodeErr = true;
+                        err = true;
+                    }
+                    if(this.email !== '' && !check_mail_addr(this.email)) {
+                        this.emailErr = true;
+                        err = true;
+                    }
+
+                    window.sendBackend('settingsSet', {
+                        data: {
+                            invitationCode: this.invitationCode,
+                            walletAddr: this.walletAddr,
+                            systemStart: this.systemStart,
+                            email: this.email
+                        },
+                        err
+                    });
+                }
+            }
+        });
+
+        window.addEventListener('load', (event) => {
+            window.sendBackend('settingsLoaded', $('#app').height());
+        });
+
+        window.onBackend((event, param) => {
+            if (event == 'walletAddrErr')
+                App._data.walletAddrErr = true;
+        });
+    </script>
+</body>
+
+</html>
