@@ -48,6 +48,19 @@ function init(_settings, _server, _job) {
             depositWindow.close();
         }
     });
+    app.on('before-quit-for-update', (e) => {
+        quitting = true;
+
+        job.handleQuit();
+        if (settingsWindow) {
+            settingsWindow.closable = true;
+            settingsWindow.close();
+        }
+        if (depositWindow) {
+            depositWindow.closable = true;
+            depositWindow.close();
+        }
+    });
 }
 
 ipcMain.on('onFrontend', async (e, event, param) => {

@@ -1,6 +1,6 @@
 "use strict";
 
-const { BrowserWindow, Menu, app, shell } = require('electron');
+const { BrowserWindow, Menu, app, shell, dialog } = require('electron');
 
 let autoUpdater;
 
@@ -232,7 +232,7 @@ exports.build = (ui, _autoUpdater) => {
             defaultId: 0,
             cancelId: 1,
             title: "Version " + info.version + " ready to install",
-            message: "An update of the Neonious Node software was downloaded and ready to be installed. Keeping the software up-to-date ensures that you can always accept paid simulations.\n\nDo you wish to restart to install the new version?"
+            message: "An update of the Neonious Node software was downloaded and is ready to be installed. Keeping the software up-to-date ensures that you can always accept paid simulations.\n\nDo you wish to restart to install the new version?"
            }
           
            Menu.getApplicationMenu().getMenuItemById('checkingForUpdate').visible = false;
@@ -240,11 +240,11 @@ exports.build = (ui, _autoUpdater) => {
            Menu.getApplicationMenu().getMenuItemById('restartToUpdate').visible = true;
            Menu.getApplicationMenu().getMenuItemById('restartToUpdate').enabled = true;
 
-           dialog.showMessageBox(win, messageBoxOptions, (responseIndex) => {
-            if (responseIndex === messageBoxOptions.defaultId) {
+           dialog.showMessageBox(undefined, messageBoxOptions).then((params) => {
+            if (params.response === messageBoxOptions.defaultId) {
              autoUpdater.quitAndInstall()
             }
-        })
+        });
     });
     return menu;
 }

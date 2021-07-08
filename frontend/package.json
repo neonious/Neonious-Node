@@ -2,7 +2,7 @@
   "name": "neoniousnode",
   "productName": "Neonious Node",
   "version": "0.9.0",
-  "description": "",
+  "description": "Neonious simulation software",
   "author": "Neonious GmbH",
   "license": "MIT",
   "main": "index.js",

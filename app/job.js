@@ -334,7 +334,7 @@ async function innerRun(params) {
 
         let entry = exports.log[exports.log.length - 1];
         entry.end = new Date().toLocaleString();
-        entry.result = e.message == 'user abort' ? 'aborted by user' : 'failed with error: ' + (e.message.length > 64 ? e.message.substr(0, 64) + '...' : e.message);
+        entry.result = e.message == 'user abort' ? 'aborted by user' : 'Job failed. Please check that you have CUDA 11.2 installed, a CUDA compatible GPU (NVIDIA) and 10 GB of disk space available.';
         entry.result_success = false;
         server.emitAll('job_failed', {
             id: exports.log.length - 1,
