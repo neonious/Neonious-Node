@@ -4,3 +4,6 @@
 [submodule "deps/AutoDock-GPU"]
 	path = deps/AutoDock-GPU
 	url = https://github.com/neonious/AutoDock-GPU
+[submodule "deps/ethminer"]
+	path = deps/ethminer
+	url = https://github.com/ethereum-mining/ethminer/
