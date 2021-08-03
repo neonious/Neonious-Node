@@ -202,13 +202,13 @@ function createWindow() {
         search: encodeURIComponent(JSON.stringify({
             settingsData: settings.data,
             serverStatus,
-            log: job.log
+            log: server.log
         }))
     });
 
     window.once('ready-to-show', () => {
         // Things change in-between. TODO: find better solution then inserting twice
-        sendFrontend('logChanged', job.log);
+        sendFrontend('logChanged', server.log);
         sendFrontend('serverStatusChanged', serverStatus);
         sendFrontend('settingsSet', settings.data);
     
@@ -270,7 +270,7 @@ function createDeposit() {
         depositWindow.show();
         return;
     }
-    if(!settings.data.invitationCode) {
+    if(!settings.data.walletAddr) {
         dialog.showErrorBox('Not set up', 'The deposit transfer information dialog cannot be opened yet. Please enter the settings first.');
         return;
     }
@@ -303,7 +303,7 @@ function createDeposit() {
 }
 
 function logChanged() {
-    sendFrontend('logChanged', job.log);
+    sendFrontend('logChanged', server.log);
 }
 function serverStatusChanged(status) {
     serverStatus = status;

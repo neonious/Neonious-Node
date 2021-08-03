@@ -1,21 +1,34 @@
 'use strict'
 
+const { app } = require('electron');
+
 const io = require("socket.io-client");
+
+const path = require('path');
+const fs = require('fs');
 
 let sockets = [];
 let connCount = 0;
 
 let settingsData, ui, job;
 
-function init(_ui, _job) {
+let logPath = path.join(app.getPath('userData'), 'wallet.json');
+
+async function init(_ui, _job) {
     ui = _ui;
     job = _job;
 
+    try {
+        module.exports.log = JSON.parse(await fs.promises.readFile(logPath, 'utf8'));
+    } catch(e) {
+        module.exports.log = [];
+    }
+
     for(let i = 0; i < 4; i++)
-        runSocket("https://node" + i + ".neonious.org:6504/");
+        runSocket("https://node" + i + ".neonious.org:6505/");
 }
 
-async function runSocket(url) {
+function runSocket(url) {
     let socket = io(url);
     let pushed, isConn = false;
 
@@ -67,8 +80,30 @@ async function runSocket(url) {
         else
             cb({busy: true});
     });
-    socket.on('job_result', (params) => {
-        job.result(params);
+
+    let logSaveNeeded = false, logSaving = false;
+    async function saveLog() {
+        if(logSaving)
+            logSaveNeeded = true;
+        else {
+            logSaving = true;
+            logSaveNeeded = false;
+            try {
+                await fs.promises.writeFile(logPath + '.tmp', JSON.stringify(module.exports.log, null, 2));
+                await fs.promises.unlock(logPath);
+                await fs.promises.rename(logPath + '.tmp', logPath);
+            } catch(e) {
+                console.error(e);
+            }
+            logSaving = false;
+            if(logSaveNeeded)
+                saveLog();
+        }
+    }
+    socket.on('log', (log) => {
+        module.exports.log = log;
+        ui.logChanged();
+        saveLog();
     });
 }
 
@@ -79,7 +114,6 @@ function settingsChanged(data, socket) {
         node_id: data.nodeID,
         wallet_address: data.walletAddr,
         live_mode: data.liveMode,
-        invitation_code: data.invitationCode,
         email: data.email,
         system_stats: {
             cpu: 'na',

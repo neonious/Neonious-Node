@@ -8,15 +8,11 @@ const path = require('path');
 const stream = require('stream');
 const child_process = require('child_process');
 const url = require('url');
-const util = require('util');
 
 const unzipper = require('unzipper');
 const archiver = require('archiver');
 
-let logPath = path.join(app.getPath('userData'), 'log.json');
 let workPath = path.join(app.getPath('userData'), 'work');
-
-let server, ui;
 
 let childProcess;
 let origCWD = process.cwd();
@@ -25,26 +21,7 @@ const GMX_BIN = path.join(__dirname, '../engine/gromacs/bin/gmx');
 const AUTOGRID4_BIN = path.join(__dirname, '../engine/autogrid4');
 const AUTODOCK_GPU_BIN = path.join(__dirname, '../engine/autodock_gpu_128wi');
 
-exports.init = async function init(_ui, _server) {
-    ui = _ui;
-    server = _server;
-
- //   try { await fs.promises.unlink(logPath); } catch(e) {}
-
-    try {
-        exports.log = JSON.parse(await fs.promises.readFile(logPath, 'utf8'));
-        if(exports.log.length && !exports.log[exports.log.length - 1].end) {
-            entry.end = new Date().toLocaleString();
-            entry.result = 'program quit unexpectedly at earlier point in time';
-            entry.result_success = false;
-    
-            await fs.promises.writeFile(logPath, JSON.stringify(exports.log, null, 2));
-            ui.logChanged();
-        }
-    } catch(e) {
-        exports.log = [];
-    }
-
+exports.init = async function init() {
     try {
         await fs.promises.mkdir(workPath);
     } catch(e) {
@@ -63,22 +40,7 @@ exports.init = async function init(_ui, _server) {
 }
 
 exports.run = async function run(params) {
-    if(exports.log.length && !exports.log[exports.log.length - 1].end)
-        return undefined;
-
-    exports.log.push({
-        start: new Date().toLocaleString(),
-        type: params.type,
-        result: 'downloading task...',
-        earned: 0,
-        earnedFormatted: '0.00'
-    });
-    let id = exports.log.length;
     innerRun(params);
-    await fs.promises.writeFile(logPath, JSON.stringify(exports.log, null, 2));
-
-    ui.logChanged();
-    return id;
 }
 
 function formatNo(no, sub_digits) {
@@ -108,22 +70,6 @@ function formatNo(no, sub_digits) {
       val = '-' + val;
 
     return val;
-  }
-
-exports.result = function result(params) {
-    let id = params.id | 0;
-    if(id >= 1 && id <= exports.log.length) {
-        if(params.result)
-            exports.log[id - 1].result = params.result;
-        if(params.result_success)
-            exports.log[id - 1].result = params.result_success;
-        if(params.earned) {
-            exports.log[id - 1].earned = params.earned;
-            exports.log[id - 1].earnedFormatted = formatNo(params.earned, 2);
-        }
-    }
-
-    fs.promises.writeFile(logPath, JSON.stringify(exports.log, null, 2));
 }
 
 exports.abort = async function abort() {
@@ -132,20 +78,17 @@ exports.abort = async function abort() {
 
 exports.handleQuit = function handleQuit() {
     innerAbortQuit();
-
-    if(exports.log.length && !exports.log[exports.log.length - 1].end) {
-        let entry = exports.log[exports.log.length - 1];
-        entry.end = new Date().toLocaleString();
-        entry.result = 'program quit';
-        entry.result_success = false;
-
-        fs.writeFileSync(logPath, JSON.stringify(exports.log, null, 2));
-    }
 }
 
-let doAbort;
+let running = false, doAbort;
 
 async function innerRun(params) {
+    if(running)
+        return;
+
+    running = true;
+    console.log("Job started.")
+
     doAbort = false;
 
 	let workDir = path.join(workPath, new Date().getTime() + '');
@@ -212,10 +155,6 @@ async function innerRun(params) {
 
         if(doAbort) throw new Error('user abort');
 
-        let entry = exports.log[exports.log.length - 1];
-        entry.result = 'running simulation...';
-        ui.logChanged();
-
         cmds = cmds.split('\n');
         for(let i = 0; i < cmds.length; i++) {
             if(doAbort) throw new Error('user abort');
@@ -259,10 +198,6 @@ async function innerRun(params) {
         }
 
         if(doAbort) throw new Error('user abort');
-
-        entry = exports.log[exports.log.length - 1];
-        entry.result = 'uploading results...';
-        ui.logChanged();
 
 		await new Promise((resolve, reject) => {
 			let options = url.parse(params.url_put);
@@ -313,14 +248,6 @@ async function innerRun(params) {
 
         process.chdir(origCWD);
         await fs.promises.rmdir(workDir, { recursive: true, force: true, maxRetries: 3 });
-
-        entry = exports.log[exports.log.length - 1];
-        entry.end = new Date().toLocaleString();
-        entry.result = 'finished successfully';
-        entry.result_success = true;
-
-        await fs.promises.writeFile(logPath, JSON.stringify(exports.log, null, 2));
-        ui.logChanged();
 	} catch (e) {
         if(e.killed  && doAbort)
             e = new Error('user abort');
@@ -331,19 +258,43 @@ async function innerRun(params) {
             process.chdir(origCWD);
             await fs.promises.rmdir(workDir, { recursive: true, force: true, maxRetries: 3 });
         } catch(e) {}
+        try {
+            await new Promise((resolve, reject) => {
+                let options = url.parse(params.url_fail);
+                options.method = 'PUT';
 
-        let entry = exports.log[exports.log.length - 1];
-        entry.end = new Date().toLocaleString();
-        entry.result = e.message == 'user abort' ? 'aborted by user' : 'Job failed. Please check that you have CUDA 11.2 installed, a CUDA compatible GPU (NVIDIA) and 10 GB of disk space available.';
-        entry.result_success = false;
-        server.emitAll('job_failed', {
-            id: exports.log.length - 1,
-            result: entry.result
-        });
+                let req;
+                let timeout = setTimeout(() => {
+                    try {
+                        req.destroy();
+                    } catch (e) { }
+                    reject(doAbort ? new Error('user abort') : new Error('timeout'));
+                }, 30000);
 
-        await fs.promises.writeFile(logPath, JSON.stringify(exports.log, null, 2));
-        ui.logChanged();
+                req = https.request(options, (res) => {
+                    if (res.statusCode != 200)
+                        return reject(new Error('not status code of 200 ' + res.statusCode));
+
+                    res.on('error', () => {
+                        clearTimeout(timeout);
+                        reject();
+                    });
+                    res.on('data', () => { });
+                    res.on('end', () => {
+                        clearTimeout(timeout);
+                        resolve();
+                    });
+                });
+
+                req.end(e.message == 'user abort' ? 'aborted by user' : 'JOB_FAILED_SYSREQ');
+            });
+        } catch(e) {
+            console.error(e);
+        }
 	}
+
+    console.log("Job finished.")
+    running = false;
 }
 
 async function innerAbort() {

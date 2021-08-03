@@ -19,13 +19,6 @@
         <div style="padding: 20px">
             <form @submit="settingsSet">
                 <div class="form-group">
-                    <label for="invitationCodeInput">Invitation Code</label>
-                    <input class="form-control" :class="{ 'is-invalid' : invitationCodeErr}" id="invitationCodeInput" aria-describedby="invitationCodeHelp"
-                        placeholder="" v-model.trim="invitationCode">
-                    <small id="invitationCodeHelp" class="form-text text-muted">Please enter the code you received from
-                        the person who invited you to the program.</small>
-                </div>
-                <div class="form-group">
                     <label for="walletAddrInput">Wallet Address</label>
                     <input class="form-control" :class="{ 'is-invalid' : walletAddrErr}" id="walletAddrInput" aria-describedby="walletAddrHelp" placeholder="0x..."
                         v-model.trim="walletAddr">
@@ -58,11 +51,9 @@
         const App = new Vue({
             el: '#app',
             data: {
-                invitationCode: params.data.invitationCode ? params.data.invitationCode : '',
                 walletAddr: params.data.walletAddr ? params.data.walletAddr : '',
                 email: params.data.email ? params.data.email : '',
                 systemStart: params.data.systemStart !== undefined ? params.data.systemStart : true,
-                invitationCodeErr: false,
                 walletAddrErr: false,
                 emailErr: false
             },
@@ -73,14 +64,9 @@
                 settingsSet: function(e) {
                     e.preventDefault();
 
-                    this.invitationCodeErr = false;
                     this.walletAddrErr = false;
 
                     let err = false;
-                    if(this.invitationCode.length != 8) {
-                        this.invitationCodeErr = true;
-                        err = true;
-                    }
                     if(this.email !== '' && !check_mail_addr(this.email)) {
                         this.emailErr = true;
                         err = true;
@@ -88,7 +74,6 @@
 
                     window.sendBackend('settingsSet', {
                         data: {
-                            invitationCode: this.invitationCode,
                             walletAddr: this.walletAddr,
                             systemStart: this.systemStart,
                             email: this.email

@@ -89,28 +89,26 @@
     <div class="row" style="background-color: #eee; padding-left: 20px; padding-right: 20px">
       <div class="col" style="padding: 20px">
         <div v-if="depositFormatted">
-          <b>Deposit:</b> {{depositFormatted}} MDSIM<br><small>({{depositUSDFormatted}} USD<span
-              v-if="depositGrowthFormatted" style="color: darkgreen">{{depositGrowthFormatted}}</span>)</small>
+          <b>Wallet:</b> {{depositFormatted}} MDSIM<br><small>({{depositUSDFormatted}} USD)</small>
         </div>
         <div v-if="!depositFormatted">
-          <b>Deposit:</b> not set up
+          <b>Wallet:</b> not set up
         </div>
       </div>
       <div class="col" style="padding: 20px; text-align: center">
-        <div style="margin-bottom: 10px"><b>Still to be paid out:</b> {{payOutFormatted}} MDSIM</div>
         <div v-if="running">
           <div class="led-green-blink"></div> Running simulation
         </div>
-        <div v-if="!running && !settingsData.invitationCode">
+        <div v-if="!running && !settingsData.walletAddr">
           <div class="led-red"></div> Need settings to accept paid work
         </div>
-        <div v-if="!running && settingsData.invitationCode && settingsData.liveMode">
+        <div v-if="!running && settingsData.walletAddr && settingsData.liveMode">
           <div v-if="!serverStatus.is_live && serverStatus.status_msg" class="led-red"></div>
           <div v-if="serverStatus.is_live || !serverStatus.status_msg" class="led-green"></div>
           <span v-if="serverStatus.status_msg">{{serverStatus.status_msg}}</span>
           <span v-if="!serverStatus.status_msg">Node is live</span>
         </div>
-        <div v-if="!running && settingsData.invitationCode && !settingsData.liveMode">
+        <div v-if="!running && settingsData.walletAddr && !settingsData.liveMode">
           <div class="led-yellow"></div> Not accepting paid work on user's wish
         </div>
       </div>
@@ -118,12 +116,12 @@
         <b-form-checkbox switch v-model="settingsLiveMode">Accept paid work from network</b-form-checkbox>
       </div>
     </div>
-    <div v-if="!settingsData.invitationCode" class="alert alert-primary" style="margin: 0" role="alert">Welcome to our
+    <div v-if="!settingsData.walletAddr" class="alert alert-primary" style="margin: 0" role="alert">Welcome to our
       software Neonious Node. As a first step, please give us the needed information to start.
       <button class="btn btn-primary" style="margin-left: 10px" @click="openSettings">Open Settings</button>
     </div>
     <div
-      v-if="settingsData.invitationCode && serverStatus.deposit_MDSIM !== undefined && serverStatus.deposit_MDSIM < serverStatus.deposit_MDSIM_needed"
+      v-if="settingsData.walletAddr && serverStatus.deposit_MDSIM !== undefined && serverStatus.deposit_MDSIM < serverStatus.deposit_MDSIM_needed"
       class="alert alert-primary" style="margin: 0" role="alert">To receive paid simulation work, you need to set up
       your deposit.
       <button class="btn btn-primary" style="margin-left: 10px" @click="openDeposit">Show Why and How</button>
@@ -131,11 +129,11 @@
     <table class="table">
       <thead>
         <tr>
-          <th style="background-color: #ddd; position: sticky; top: 0">Start Time</th>
-          <th style="background-color: #ddd; position: sticky; top: 0">End Time</th>
-          <th style="background-color: #ddd; position: sticky; top: 0">Type</th>
-          <th style="background-color: #ddd; position: sticky; top: 0">Result</th>
+          <th style="background-color: #ddd; position: sticky; top: 0">Date</th>
+          <th style="background-color: #ddd; position: sticky; top: 0">Action</th>
+          <th style="background-color: #ddd; position: sticky; top: 0">Comment</th>
           <th style="background-color: #ddd; position: sticky; top: 0; text-align: right">Earned</th>
+          <th style="background-color: #ddd; position: sticky; top: 0; text-align: right">Balance</th>
         </tr>
       </thead>
       <tbody>
@@ -147,14 +145,11 @@
           </td>
         </tr>
         <tr v-for="item in log.slice().reverse()">
-          <td class="text-nowrap">{{item.start}}</td>
-          <td class="text-nowrap" v-if="item.end">{{item.end}}</td>
-          <td class="text-nowrap" v-if="!item.end"><i>on-going</i></td>
-          <td class="text-nowrap">{{item.type}}</td>
-          <td v-if="item.end" :class="item.result_success ? 'item-green' : 'item-red'">{{item.result}}</td>
-          <td v-if="!item.end">{{item.result}}</td>
-          <td class="text-nowrap" v-if="item.end" style="text-align: right">{{item.earnedFormatted}} MDSIM</td>
-          <td class="text-nowrap" v-if="!item.end" style="text-align: right"><button class="btn btn-danger" @click="abortSim">Abort Running Simulation</button></td>
+          <td class="text-nowrap">{{item.date}}</td>
+          <td class="text-nowrap">{{item.action}}</td>
+          <td class="text-nowrap">{{item.comment}}</td>
+          <td class="text-nowrap" style="text-align: right">{{item.earnedFormatted}} MDSIM</td>
+          <td class="text-nowrap" style="text-align: right">{{item.depositFormatted}} MDSIM</td>
         </tr>
       </tbody>
     </table>
@@ -191,6 +186,10 @@
     }
 
     const params = JSON.parse(decodeURIComponent(location.search.substr(1))); // skip ?
+    for(let i = 0; i < params.log.length; i++) {
+      params.log[i].earnedFormatted = formatNo(params.log[i].earned, 2);
+      params.log[i].depositFormatted = formatNo(params.log[i].deposit, 2);
+    }
 
     Vue.use(BootstrapVue);
     const App = new Vue({
@@ -200,7 +199,8 @@
         settingsLiveMode: params.settingsData.liveMode,
         serverStatus: params.serverStatus,
         log: params.log,
-        running: params.log.length && !params.log[params.log.length - 1].end
+        depositFormatted: params.log.length ? params.log[params.log.length - 1].depositFormatted : '0.00',
+        running: false//params.log.length && !params.log[params.log.length - 1].end
       },
       watch: {
         settingsLiveMode: function (val) {
@@ -208,23 +208,9 @@
         }
       },
       computed: {
-        depositFormatted: function () {
-          return this.serverStatus.deposit_MDSIM === undefined ? undefined : formatNo(this.serverStatus.deposit_MDSIM, 2);
-        },
         depositUSDFormatted: function () {
           return this.serverStatus.deposit_USD === undefined ? undefined : formatNo(this.serverStatus.deposit_USD, 2);
         },
-        depositGrowthFormatted: function () {
-          if (this.serverStatus.deposit_USD_start === undefined)
-            return;
-
-          let start = Math.round(this.serverStatus.deposit_USD_start * 100);
-          let now = Math.round(this.serverStatus.deposit_USD * 100);
-          return !start || start > now ? undefined : ', +' + formatNo((now / start - 1) * 100, 2) + ' % since transfer';
-        },
-        payOutFormatted: function () {
-          return formatNo(this.serverStatus.pay_out_pending === undefined ? 0 : this.serverStatus.pay_out_pending, 2);
-        }
       },
       methods: {
         openSettings: () => {
@@ -250,8 +236,13 @@
       if (event == 'settingsSet')
         App._data.settingsData = param;
       if (event == 'logChanged') {
+        for(let i = 0; i < param.length; i++) {
+          param[i].earnedFormatted = formatNo(param[i].earned, 2);
+          param[i].depositFormatted = formatNo(param[i].deposit, 2);
+        }
         App._data.log = param;
-        App._data.running = param.length && !param[param.length - 1].end;
+        App._data.depositFormatted = param.length ? param[param.length - 1].depositFormatted : '0.00'
+     //   App._data.running = param.length && !param[param.length - 1].end;
       }
       if (event == 'serverStatusChanged')
         App._data.serverStatus = param;
