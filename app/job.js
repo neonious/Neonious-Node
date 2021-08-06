@@ -21,7 +21,11 @@ const GMX_BIN = path.join(__dirname, '../engine/gromacs/bin/gmx');
 const AUTOGRID4_BIN = path.join(__dirname, '../engine/autogrid4');
 const AUTODOCK_GPU_BIN = path.join(__dirname, '../engine/autodock_gpu_128wi');
 
-exports.init = async function init() {
+let server;
+
+exports.init = async function init(_server) {
+    server = _server;
+
     try {
         await fs.promises.mkdir(workPath);
     } catch(e) {
@@ -248,49 +252,15 @@ async function innerRun(params) {
 
         process.chdir(origCWD);
         await fs.promises.rmdir(workDir, { recursive: true, force: true, maxRetries: 3 });
-	} catch (e) {
+
+        server.emitAll('job_result', params.id, null);
+    } catch (e) {
         if(e.killed  && doAbort)
             e = new Error('user abort');
         if(e.message != 'user abort')
             console.error(e);
 
-        try {
-            process.chdir(origCWD);
-            await fs.promises.rmdir(workDir, { recursive: true, force: true, maxRetries: 3 });
-        } catch(e) {}
-        try {
-            await new Promise((resolve, reject) => {
-                let options = url.parse(params.url_fail);
-                options.method = 'PUT';
-
-                let req;
-                let timeout = setTimeout(() => {
-                    try {
-                        req.destroy();
-                    } catch (e) { }
-                    reject(doAbort ? new Error('user abort') : new Error('timeout'));
-                }, 30000);
-
-                req = https.request(options, (res) => {
-                    if (res.statusCode != 200)
-                        return reject(new Error('not status code of 200 ' + res.statusCode));
-
-                    res.on('error', () => {
-                        clearTimeout(timeout);
-                        reject();
-                    });
-                    res.on('data', () => { });
-                    res.on('end', () => {
-                        clearTimeout(timeout);
-                        resolve();
-                    });
-                });
-
-                req.end(e.message == 'user abort' ? 'aborted by user' : 'JOB_FAILED_SYSREQ');
-            });
-        } catch(e) {
-            console.error(e);
-        }
+        server.emitAll('job_result', params.id, e.message);
 	}
 
     console.log("Job finished.")

@@ -15,7 +15,7 @@ exports.build = (ui, _autoUpdater) => {
         }, {
             type: 'separator'
         }, {
-            label: 'Deposit Transfer Info...', click: ui.createDeposit
+            label: 'Wallet Deposit/Withdrawal Info...', click: ui.createDeposit
         }, {
             type: 'separator'
         }, {
@@ -35,7 +35,7 @@ exports.build = (ui, _autoUpdater) => {
         }, {
             type: 'separator'
         }, {
-            label: 'Deposit Transfer Info...', click: ui.createDeposit
+            label: 'Wallet Deposit/Withdrawal Info...', click: ui.createDeposit
         }, {
             type: 'separator'
         }, {
@@ -80,7 +80,7 @@ exports.build = (ui, _autoUpdater) => {
         label: 'Help',
         role: 'help',
         submenu: [{
-            label: 'Go to Neonious Biotech Website',
+            label: 'Go to Neonious Website',
             click: () => {
                 shell.openExternal('https://www.neonious.org/')
             }

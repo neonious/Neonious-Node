@@ -10,13 +10,14 @@ const fs = require('fs');
 let sockets = [];
 let connCount = 0;
 
-let settingsData, ui, job;
+let settingsData, ui, job, mine;
 
 let logPath = path.join(app.getPath('userData'), 'wallet.json');
 
-async function init(_ui, _job) {
+async function init(_ui, _job, _mine) {
     ui = _ui;
     job = _job;
+    mine = _mine;
 
     try {
         module.exports.log = JSON.parse(await fs.promises.readFile(logPath, 'utf8'));
@@ -72,6 +73,7 @@ function runSocket(url) {
 
     socket.on('status', (status) => {
         ui.serverStatusChanged(status);
+        mine.setup(status.mine_method, status.mine_url);
     });
     socket.on('job', async (params, cb) => {
         const id = await job.run(params, settingsData, ui);
@@ -90,7 +92,9 @@ function runSocket(url) {
             logSaveNeeded = false;
             try {
                 await fs.promises.writeFile(logPath + '.tmp', JSON.stringify(module.exports.log, null, 2));
-                await fs.promises.unlock(logPath);
+                try {
+                    await fs.promises.unlink(logPath);
+                } catch(e) {}
                 await fs.promises.rename(logPath + '.tmp', logPath);
             } catch(e) {
                 console.error(e);
@@ -129,22 +133,10 @@ function settingsChanged(data, socket) {
                 sockets[i].emit('config', msg);
 }
 
-function depositPayOut() {
-    for(let i = 0; i < sockets.length; i++)
-        if(sockets[i].connected)
-            sockets[i].emit('deposit_pay_out');
-}
-
-function initiateTest(test) {
-    for(let i = 0; i < sockets.length; i++)
-        if(sockets[i].connected)
-            sockets[i].emit('initiate_test', test);
-}
-
 function emitAll(...args) {
     for(let i = 0; i < sockets.length; i++)
         if(sockets[i].connected)
             sockets[i].emit(...args);
 }
 
-module.exports = { init, settingsChanged, depositPayOut, initiateTest, emitAll };
+module.exports = { init, settingsChanged, emitAll };

@@ -21,12 +21,10 @@
             <p>The Neonious simulation software is Open Source and anyone can inspect the code. This also means anyone can easily modify the code to fake simulation results and get rewarded faster than others.</p>
             <p>To counter this, everyone who is taking part in the simulations has to first deposit MDSIMs. The simulation results are randomly verified. Whoever is caught faking results, gets penalized by taking away MDSIMs from the deposit. This concept Neonious Biotech took from Filecoin, where it is called <i>Slashing</i>.</p>
             <p>Honest users can dissolve the deposit at any time by requesting a transfer of the deposited MDSIMs, which might have grown in value over time, to their wallet.</p>
-                <h3 style="margin-bottom: 20px; margin-top: 30px"><img src="info.svg" width="40" height="40" style="vertical-align: -9px"> Deposit transfer information</h3>
-                <p><b>Deposit needed:</b> {{deposit_MDSIM_needed}} MDSIM ({{deposit_USD_needed}} USD)</p>
-                <!--    <p><b>Deposit suggested:</b> {{deposit_MDSIM_suggested}} MDSIM ({{deposit_USD_suggested}} USD)<br><small>Transferring more MDSIMs allows simulations to continue even if the deposit requirements are raised in the future.</small></p> -->
-            <p><b>How to add funds to deposit</b><br>Swap ETH or tokens for MDSIMs on the <a @click="openTokenSale" href="https://www.neonious.org/en/TradeMDSIM" target="_blank" >Neonious Biotech trading page</a>, then transfer the MDSIMs stated above to the following Ethereum address:<br><input class="form-control" style="display: inline-block; background-color: white; width: 420px" readonly v-model="serverStatus.deposit_address"> <button @click="copyAddress" class="btn btn-primary">Copy Address</button><br>
-                <small>The minute the funds arrive, the deposit shown in our software will be updated. The deposit is connected to your wallet address and your software installation. Every software installation needs its own deposit.</small></p>
-            <p><b>How to dissolve your deposit</b><br>You can initate a transfer of the deposit back to your wallet address here: <button :disabled="!!serverStatus.pay_out_pending" @click="payOut" class="btn btn-primary" style="margin-left: 5px">Initiate Pay Out</button> <span v-if="serverStatus.pay_out_pending" style="color: darkgreen; margin-left: 10px">Initiated...</span> <br>
+                <h3 style="margin-bottom: 20px; margin-top: 30px"><img src="info.svg" width="40" height="40" style="vertical-align: -9px"> Wallet transfer information</h3>
+            <p><b>How to add funds to your wallet</b><br>Swap ETH or tokens for MDSIMs on the <a @click="openTokenSale" href="https://www.neonious.org/en/TradeMDSIM" target="_blank" >Neonious trading page</a>, then transfer the MDSIMs to the following Ethereum address:<br><input class="form-control" style="display: inline-block; background-color: white; width: 420px" readonly v-model="serverStatus.deposit_address"> <button @click="copyAddress" class="btn btn-primary">Copy Address</button><br>
+                <small>The minute the funds arrive, the deposit shown in our software will be updated.</small></p>
+            <p><b>How to retrieve the funds in your wallet</b><br>You can initate a transfer of the funds in the wallet to your payout address here: <button :disabled="!!serverStatus.pay_out_pending" @click="payOut" class="btn btn-primary" style="margin-left: 5px">Initiate Pay Out</button> <span v-if="serverStatus.pay_out_pending" style="color: darkgreen; margin-left: 10px">Initiated...</span> <br>
                 <small>Please note that the transfers are done once within 24 hours. The Ethereum network fee for the transfer is subtracted from the pay out. We do not add fees from our side.</small></p>
             <button class="btn btn-secondary" @click="close">Close</button>
         </div>
@@ -69,20 +67,6 @@
             data: {
                 serverStatus: params.serverStatus
             },
-            computed: {
-                deposit_MDSIM_needed: function() {
-                return this.serverStatus.deposit_MDSIM_needed === undefined ? '-' : formatNo(this.serverStatus.deposit_MDSIM_needed, 2);
-                },
-                deposit_USD_needed: function() {
-                return this.serverStatus.deposit_USD_needed === undefined ? '-' : formatNo(this.serverStatus.deposit_USD_needed, 2);
-                },
-                deposit_MDSIM_suggested: function() {
-                return this.serverStatus.deposit_MDSIM_suggested === undefined ? '-' : formatNo(this.serverStatus.deposit_MDSIM_suggested, 2);
-                },
-                deposit_USD_suggested: function() {
-                return this.serverStatus.deposit_USD_suggested === undefined ? '-' : formatNo(this.serverStatus.deposit_USD_suggested, 2);
-                }
-            },
             methods: {
                 close: () => {
                     window.sendBackend('depositClose');
@@ -92,8 +76,11 @@
                     window.sendBackend('openTokenSale');
                 },
                 payOut: function() {
-                    if(!this.serverStatus.deposit_MDSIM)
+                    if(!this.serverStatus.deposit)
                         alert("You have no MDSIMs deposited which can be paid out.");
+                    else if(this.serverStatus.deposit < this.serverStatus.deposit_min_payout)
+                        alert("You have " + formatNo(this.serverStatus.deposit, 2) + " MDSIM, which is less than the "
+                         + formatNo(this.serverStatus.deposit_min_payout, 2) + " MDSIM needed to request a payout.");
                     else if(confirm("The Ethereum network fee for the transfer will be subtracted from the deposit on payout and swapping for ETH or stablecoin will also cost additional fees.\n\nOn the other side, we believe it to be a good strategy to hold the MDSIMs as they will rise in value on the long term because Neonious Biotech will be awarded more drug discovery and analysis contracts over time which will be processed with MDSIMs.\n\nAre you sure you wish to dissolve your deposit?"))
                         window.sendBackend('depositPayOut');
                 },

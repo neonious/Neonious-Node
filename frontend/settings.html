@@ -19,7 +19,7 @@
         <div style="padding: 20px">
             <form @submit="settingsSet">
                 <div class="form-group">
-                    <label for="walletAddrInput">Wallet Address</label>
+                    <label for="walletAddrInput">Payout Address</label>
                     <input class="form-control" :class="{ 'is-invalid' : walletAddrErr}" id="walletAddrInput" aria-describedby="walletAddrHelp" placeholder="0x..."
                         v-model.trim="walletAddr">
                     <small id="walletAddrHelp" class="form-text text-muted">Please enter the Ethereum address where you

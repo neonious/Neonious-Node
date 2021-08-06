@@ -89,7 +89,7 @@
     <div class="row" style="background-color: #eee; padding-left: 20px; padding-right: 20px">
       <div class="col" style="padding: 20px">
         <div v-if="depositFormatted">
-          <b>Wallet:</b> {{depositFormatted}} MDSIM<br><small>({{depositUSDFormatted}} USD)</small>
+          <b>Wallet:</b> {{depositFormatted}} MDSIM <small v-if="depositUSDFormatted">({{depositUSDFormatted}} USD)</small>
         </div>
         <div v-if="!depositFormatted">
           <b>Wallet:</b> not set up
@@ -121,10 +121,9 @@
       <button class="btn btn-primary" style="margin-left: 10px" @click="openSettings">Open Settings</button>
     </div>
     <div
-      v-if="settingsData.walletAddr && serverStatus.deposit_MDSIM !== undefined && serverStatus.deposit_MDSIM < serverStatus.deposit_MDSIM_needed"
-      class="alert alert-primary" style="margin: 0" role="alert">To receive paid simulation work, you need to set up
-      your deposit.
-      <button class="btn btn-primary" style="margin-left: 10px" @click="openDeposit">Show Why and How</button>
+      v-if="settingsData.walletAddr && !deposit"
+      class="alert alert-primary" style="margin: 0" role="alert">You have no MDSIMs in your wallet. Consider transfering MDSIMs to your wallet to receive higher paid work.
+      <button class="btn btn-primary" style="margin-left: 10px" @click="openDeposit">Explain More</button>
     </div>
     <table class="table">
       <thead>
@@ -140,8 +139,7 @@
         <tr v-if="!this.running">
           <td colspan="3">There is currently no active job. Make sure your software will work when the time comes.</td>
           <td colspan="2">
-            <button class="btn btn-primary" @click="testDock">Test Docking Sim (small)</button>
-            <button class="btn btn-primary" style="margin-left: 10px" @click="testMD">Test MD Sim (more data)</button>
+            <button class="btn btn-primary" @click="test">Test</button>
           </td>
         </tr>
         <tr v-for="item in log.slice().reverse()">
@@ -199,6 +197,7 @@
         settingsLiveMode: params.settingsData.liveMode,
         serverStatus: params.serverStatus,
         log: params.log,
+        deposit: params.log.length ? params.log[params.log.length - 1].deposit : 0,
         depositUSDFormatted: params.serverStatus.rate_usd === undefined ? undefined : formatNo((params.log.length ? params.log[params.log.length - 1].deposit : 0) * this.serverStatus.rate_usd, 2),
         depositFormatted: params.log.length ? params.log[params.log.length - 1].depositFormatted : '0.00',
         running: false//params.log.length && !params.log[params.log.length - 1].end
@@ -215,11 +214,8 @@
         openDeposit: () => {
           sendBackend('openDeposit');
         },
-        testDock: () => {
-          sendBackend('test', 'dock');
-        },
-        testMD: () => {
-          sendBackend('test', 'md');
+        test: () => {
+          sendBackend('test');
         },
         abortSim: () => {
           if(confirm("Are you sure you wish to abort the simulation? If this is a paid simulation, this will result into no MDSIMs earned."))
@@ -237,6 +233,7 @@
           param[i].depositFormatted = formatNo(param[i].deposit, 2);
         }
         App._data.log = param;
+        App._data.deposit = param.length ? param[param.length - 1].deposit : 0;
         App._data.depositUSDFormatted = App._data.serverStatus.rate_usd === undefined ? undefined : formatNo((param.length ? param[param.length - 1].deposit : 0) * App._data.serverStatus.rate_usd, 2),
         App._data.depositFormatted = param.length ? param[param.length - 1].depositFormatted : '0.00'
      //   App._data.running = param.length && !param[param.length - 1].end;

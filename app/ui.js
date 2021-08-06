@@ -19,7 +19,7 @@ function init(_settings, _server, _job) {
     let trayMenu = [
         { label: 'Open Main Window', click: createWindow },
         { type: 'separator' },
-        { label: 'Deposit Transfer Info...', click: createDeposit },
+        { label: 'Wallet Deposit/Withdrawal Info...', click: createDeposit },
         { label: 'Settings...', click: createSettings }
     ];
     if (process.platform == 'darwin')
@@ -75,7 +75,7 @@ ipcMain.on('onFrontend', async (e, event, param) => {
     }
 
     if(event == 'test')
-        server.initiateTest(param);
+        server.emitAll('initate_test');
     if(event == 'abortSim')
         job.abort();
 
@@ -143,7 +143,7 @@ ipcMain.on('onFrontend', async (e, event, param) => {
         shell.openExternal('https://www.neonious.org/en/TradeMDSIM');
     }
     if(event == 'depositPayOut') {
-        server.depositPayOut();
+        server.emitAll('deposit_pay_out');
     }
     if(event == 'copyDepositAddress') {
         clipboard.writeText(serverStatus.deposit_address);
@@ -276,7 +276,7 @@ function createDeposit() {
     }
 
     depositWindow = new BrowserWindow({
-        title: "Deposit Transfer Info",
+        title: "Wallet Deposit/Withdrawal Info",
         width: 900,
         height: 800,
         maximizable: false,

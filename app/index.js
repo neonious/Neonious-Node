@@ -4,7 +4,10 @@ const server = require('./server.js');
 const settings = require('./settings.js');
 const ui = require('./ui.js');
 const menus = require('./menus.js');
+
 const job = require('./job.js');
+const mine = require('./mine.js');
+
 let electron = require('electron');
 
 const { app, Menu } = require('electron')
@@ -24,8 +27,8 @@ if (!app.requestSingleInstanceLock()) {
 
 app.on('ready', async () => {
     await settings.init(server);
-    await job.init();
-    await server.init(ui, job);
+    await job.init(server);
+    await server.init(ui, job, mine);
 
     ui.init(settings, server, job);
     Menu.setApplicationMenu(menus.build(ui, autoUpdater));
