@@ -109,11 +109,11 @@
           <span v-if="!serverStatus.status_msg">Node is live</span>
         </div>
         <div v-if="!running && settingsData.walletAddr && !settingsData.liveMode">
-          <div class="led-yellow"></div> Not accepting paid work on user's wish
+          <div class="led-yellow"></div> Not active on user's wish
         </div>
       </div>
       <div class="col" style="padding: 20px; text-align: right">
-        <b-form-checkbox switch v-model="settingsLiveMode">Accept paid work from network</b-form-checkbox>
+        <b-form-checkbox switch v-model="settingsLiveMode">Node active</b-form-checkbox>
       </div>
     </div>
     <div v-if="!settingsData.walletAddr" class="alert alert-primary" style="margin: 0" role="alert">Welcome to our

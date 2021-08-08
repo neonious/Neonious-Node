@@ -5,16 +5,17 @@ const path = require('path');
 
 const ethereum_address = require('ethereum-address');
 
-let settings, server, serverStatus = {}, job;
+let settings, server, serverStatus = {}, job, mine;
 
 let tray, window, settingsWindow, depositWindow;
 
 let quitting;
 
-function init(_settings, _server, _job) {
+function init(_settings, _server, _job, _mine) {
     settings = _settings;
     server = _server;
     job = _job;
+    mine = _mine;
 
     let trayMenu = [
         { label: 'Open Main Window', click: createWindow },
@@ -35,10 +36,13 @@ function init(_settings, _server, _job) {
     }
 
     app.on('window-all-closed', function () { });
-    app.on('before-quit', (e) => {
+
+    function beforeQuit() {
         quitting = true;
 
+        mine.handleQuit();
         job.handleQuit();
+
         if (settingsWindow) {
             settingsWindow.closable = true;
             settingsWindow.close();
@@ -47,20 +51,9 @@ function init(_settings, _server, _job) {
             depositWindow.closable = true;
             depositWindow.close();
         }
-    });
-    app.on('before-quit-for-update', (e) => {
-        quitting = true;
-
-        job.handleQuit();
-        if (settingsWindow) {
-            settingsWindow.closable = true;
-            settingsWindow.close();
-        }
-        if (depositWindow) {
-            depositWindow.closable = true;
-            depositWindow.close();
-        }
-    });
+    }
+    app.on('before-quit', beforeQuit);
+    app.on('before-quit-for-update', beforeQuit);
 }
 
 ipcMain.on('onFrontend', async (e, event, param) => {

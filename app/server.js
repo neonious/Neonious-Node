@@ -57,6 +57,7 @@ function runSocket(url) {
                     is_live: false,
                     status_msg: 'No Internet connection'
                 });
+                mine.enable('SERVER', false);
             }
         }
     }
@@ -74,6 +75,7 @@ function runSocket(url) {
     socket.on('status', (status) => {
         ui.serverStatusChanged(status);
         mine.setup(status.mine_method, status.mine_url);
+        mine.enable('SERVER', status.is_live);
     });
     socket.on('job', async (params, cb) => {
         const id = await job.run(params, settingsData, ui);

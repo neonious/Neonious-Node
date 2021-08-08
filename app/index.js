@@ -26,11 +26,11 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 app.on('ready', async () => {
-    await settings.init(server);
-    await job.init(server);
+    await settings.init(server, mine);
+    await job.init(server, mine);
     await server.init(ui, job, mine);
 
-    ui.init(settings, server, job);
+    ui.init(settings, server, job, mine);
     Menu.setApplicationMenu(menus.build(ui, autoUpdater));
 
     ui.createWindow();

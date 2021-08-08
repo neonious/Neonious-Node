@@ -9,10 +9,11 @@ const AutoLaunch = require('auto-launch');
 
 let settingsPath = path.join(app.getPath('userData'), 'pref.json');
 
-let server;
+let server, mine;
 
-exports.init = async function(_server) {
+exports.init = async function(_server, _mine) {
     server = _server;
+    mine = _mine;
 
 //    try { await fs.promises.unlink(settingsPath); } catch(e) {}
 
@@ -22,6 +23,7 @@ exports.init = async function(_server) {
     } catch(e) {
         exports.data = {nodeID: crypto.randomBytes(16).toString('hex').toUpperCase(), liveMode: true};
     }
+    mine.enable('CLIENT', exports.data.liveMode);
 }
 
 exports.set = async function(data) {
@@ -43,4 +45,5 @@ exports.set = async function(data) {
     await fs.promises.writeFile(settingsPath, JSON.stringify(data, null, 2));
 
     server.settingsChanged(data);
+    mine.enable('CLIENT', data.liveMode);
 }

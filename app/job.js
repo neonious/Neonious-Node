@@ -21,10 +21,11 @@ const GMX_BIN = path.join(__dirname, '../engine/gromacs/bin/gmx');
 const AUTOGRID4_BIN = path.join(__dirname, '../engine/autogrid4');
 const AUTODOCK_GPU_BIN = path.join(__dirname, '../engine/autodock_gpu_128wi');
 
-let server;
+let server, mine;
 
-exports.init = async function init(_server) {
+exports.init = async function init(_server, _mine) {
     server = _server;
+    mine = _mine;
 
     try {
         await fs.promises.mkdir(workPath);
@@ -172,7 +173,6 @@ async function innerRun(params) {
 
             cmd = cmd.split(/\s+/);
             let exe = cmd.shift();
-
             function execFile(a, b) {
                 return new Promise((resolve, reject) => {
                     childProcess = child_process.execFile(a, b, async (err, stdout, stderr) => {
@@ -193,12 +193,20 @@ async function innerRun(params) {
                 })
             }
 
-            if(exe == 'gmx')
+            if(exe == 'sleep')
+                await new Promise((resolve) => { setInterval(resolve, cmd[0] | 0); });
+            else if(exe == 'mine' && cmd[0] == 'on')
+                mine.enable('JOB', true);
+            else if(exe == 'mine' && cmd[0] == 'off')
+                await mine.enable('JOB', false);
+            else if(exe == 'gmx')
                 await execFile(GMX_BIN, cmd);
-            if(exe == 'autogrid4')
+            else if(exe == 'autogrid4')
                 await execFile(AUTOGRID4_BIN, cmd);
-            if(exe == 'autodock_gpu_128wi')
+            else if(exe == 'autodock_gpu_128wi')
                 await execFile(AUTODOCK_GPU_BIN, cmd);
+            else
+                throw new Error('unknown command ' + cmd);
         }
 
         if(doAbort) throw new Error('user abort');
@@ -263,6 +271,7 @@ async function innerRun(params) {
         server.emitAll('job_result', params.id, e.message);
 	}
 
+    mine.enable('JOB', true);
     console.log("Job finished.")
     running = false;
 }
