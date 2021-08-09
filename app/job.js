@@ -1,7 +1,5 @@
 'use strict';
 
-const { app } = require('electron');
-
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
@@ -12,20 +10,21 @@ const url = require('url');
 const unzipper = require('unzipper');
 const archiver = require('archiver');
 
-let workPath = path.join(app.getPath('userData'), 'work');
-
-let childProcess;
+let workPath, childProcess;
 let origCWD = process.cwd();
 
 const GMX_BIN = path.join(__dirname, '../engine/gromacs/bin/gmx');
 const AUTOGRID4_BIN = path.join(__dirname, '../engine/autogrid4');
 const AUTODOCK_GPU_BIN = path.join(__dirname, '../engine/autodock_gpu_128wi');
 
-let server, mine;
+let uiMode, server, mine;
 
-exports.init = async function init(_server, _mine) {
+exports.init = async function init(_uiMode, _server, _mine) {
+    uiMode = _uiMode;
     server = _server;
     mine = _mine;
+
+   workPath = uiMode ? path.join(require('electron').app.getPath('userData'), 'work') : path.join(__dirname, '../work');
 
     try {
         await fs.promises.mkdir(workPath);

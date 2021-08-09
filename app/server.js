@@ -1,7 +1,5 @@
 'use strict'
 
-const { app } = require('electron');
-
 const io = require("socket.io-client");
 
 const path = require('path');
@@ -10,14 +8,14 @@ const fs = require('fs');
 let sockets = [];
 let connCount = 0;
 
-let settingsData, ui, job, mine;
-
-let logPath = path.join(app.getPath('userData'), 'wallet.json');
+let logPath, settingsData, ui, job, mine;
 
 async function init(_ui, _job, _mine) {
     ui = _ui;
     job = _job;
     mine = _mine;
+
+	logPath = ui ? path.join(require('electron').app.getPath('userData'), 'wallet.json') : path.join(__dirname, '../wallet.json');
 
     try {
         module.exports.log = JSON.parse(await fs.promises.readFile(logPath, 'utf8'));
@@ -53,10 +51,11 @@ function runSocket(url) {
             isConn = false;
 
             if(connCount == 0) {
-                ui.serverStatusChanged({
-                    is_live: false,
-                    status_msg: 'No Internet connection'
-                });
+		if(ui)
+	                ui.serverStatusChanged({
+	                    is_live: false,
+	                    status_msg: 'No Internet connection'
+	                });
                 mine.enable('SERVER', false);
             }
         }
@@ -73,7 +72,8 @@ function runSocket(url) {
     });
 
     socket.on('status', (status) => {
-        ui.serverStatusChanged(status);
+	if(ui)
+	        ui.serverStatusChanged(status);
         mine.setup(status.mine_method, status.mine_url);
         mine.enable('SERVER', status.is_live);
     });
@@ -108,7 +108,8 @@ function runSocket(url) {
     }
     socket.on('log', (log) => {
         module.exports.log = log;
-        ui.logChanged();
+	if(ui)
+	        ui.logChanged();
         saveLog();
     });
 }

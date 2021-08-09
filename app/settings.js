@@ -4,17 +4,15 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
-const { app, dialog } = require('electron');
-const AutoLaunch = require('auto-launch');
+let settingsPath;
+let uiMode, server, mine;
 
-let settingsPath = path.join(app.getPath('userData'), 'pref.json');
-
-let server, mine;
-
-exports.init = async function(_server, _mine) {
+exports.init = async function(_uiMode, _server, _mine) {
+	uiMode = _uiMode;
     server = _server;
     mine = _mine;
 
+	settingsPath = uiMode ? path.join(require('electron').app.getPath('userData'), 'pref.json') : path.join(__dirname, '../pref.json');
 //    try { await fs.promises.unlink(settingsPath); } catch(e) {}
 
     try {
@@ -22,12 +20,16 @@ exports.init = async function(_server, _mine) {
         server.settingsChanged(exports.data);
     } catch(e) {
         exports.data = {nodeID: crypto.randomBytes(16).toString('hex').toUpperCase(), liveMode: true};
+	await fs.promises.writeFile(settingsPath, JSON.stringify(exports.data, null, 2));
     }
     mine.enable('CLIENT', exports.data.liveMode);
 }
 
 exports.set = async function(data) {
-    if(data.systemStart != exports.data.systemStart) {
+    if(uiMode && data.systemStart != exports.data.systemStart) {
+	const AutoLaunch = require('auto-launch');
+	const { dialog } = require('electron');
+
         try {
             const autoLauncher = new AutoLaunch({name: 'Neonious Node'});
             if(data.systemStart)
