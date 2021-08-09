@@ -1,7 +1,6 @@
 #!/bin/bash
 #
-# Compile dependencies (engines). Used for macOS, thus
-# configured for OpenCL instead of CUDA.
+# Compile dependencies (engines), OpenCL version
 #
 
 DIR_NOW="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -44,3 +43,9 @@ cmake .. -DETHASHCL=ON -DETHASHCUDA=OFF -DCMAKE_INSTALL_PREFIX="${DIR}/engine/et
 make
 make install
 cd "${DIR}"
+
+echo OpenCL > engine/version
+
+echo "DONE. Please check if the entries version, autodock_gpu_128wi, autogrid4, ethminer and gromacs exist:"
+ls -lah engine
+

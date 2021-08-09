@@ -1,7 +1,6 @@
 ## Preperation steps:
 
-	git submodule init
-	git submodule update
+	git submodule update --init --recursive
 	npm i
 	cd app; npm i; cd ..
 	cd frontend; npm i; cd ..
@@ -9,7 +8,7 @@
 	(only on macOS and Linux)
 	cd app; ../node_modules/.bin/electron-rebuild; cd ..
 	cd setup
-	. compile_deps.sh
+	. compile_deps.opencl.sh
 	cd ..
 	
 	(only on Windows)
