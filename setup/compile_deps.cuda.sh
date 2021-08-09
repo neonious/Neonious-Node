@@ -1,9 +1,10 @@
 #!/bin/bash
 #
-# Compile dependencies (engines), CUDA version
+# Compile dependencies (engines), CUDA version 11
 #
 
 # Needed environmental variables: CUDA_VERSION
+# (note it will not work for < 11, you will need to change setup/CMakeLists.libethash-cuda.txt)
 
 export GPU_INCLUDE_PATH=/usr/local/cuda-${CUDA_VERSION}/include
 export GPU_LIBRARY_PATH=/usr/local/cuda-${CUDA_VERSION}/lib64
