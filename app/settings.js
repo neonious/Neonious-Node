@@ -12,7 +12,7 @@ exports.init = async function(_uiMode, _server, _mine) {
     server = _server;
     mine = _mine;
 
-	settingsPath = uiMode ? path.join(require('electron').app.getPath('userData'), 'pref.json') : path.join(__dirname, '../pref.json');
+	settingsPath = uiMode ? path.join(require('electron').app.getPath('userData'), 'settings.json') : path.join(__dirname, '../settings.json');
 //    try { await fs.promises.unlink(settingsPath); } catch(e) {}
 
     try {
@@ -20,7 +20,7 @@ exports.init = async function(_uiMode, _server, _mine) {
         server.settingsChanged(exports.data);
     } catch(e) {
         exports.data = {nodeID: crypto.randomBytes(16).toString('hex').toUpperCase(), liveMode: true};
-	await fs.promises.writeFile(settingsPath, JSON.stringify(exports.data, null, 2));
+	    await fs.promises.writeFile(settingsPath, JSON.stringify(exports.data, null, 2));
     }
     mine.enable('CLIENT', exports.data.liveMode);
 }

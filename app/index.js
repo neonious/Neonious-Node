@@ -26,8 +26,8 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 app.on('ready', async () => {
-    await settings.init(server, mine);
-    await job.init(server, mine);
+    await settings.init(true, server, mine);
+    await job.init(true, server, mine);
     await server.init(ui, job, mine);
 
     ui.init(settings, server, job, mine);

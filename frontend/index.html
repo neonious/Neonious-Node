@@ -100,7 +100,7 @@
           <div class="led-green-blink"></div> Running simulation
         </div>
         <div v-if="!running && !settingsData.walletAddr">
-          <div class="led-red"></div> Need settings to accept paid work
+          <div class="led-red"></div> Need settings set to activate node
         </div>
         <div v-if="!running && settingsData.walletAddr && settingsData.liveMode">
           <div v-if="!serverStatus.is_live && serverStatus.status_msg" class="led-red"></div>
