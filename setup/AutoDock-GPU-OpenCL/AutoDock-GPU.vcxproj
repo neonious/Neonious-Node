@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\deps\AutoDock-GPU\cuda\GpuData.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\deps\AutoDock-GPU\host\src\calcenergy.cpp" />
+    <ClCompile Include="..\..\deps\AutoDock-GPU\host\src\getparameters.cpp" />
+    <ClCompile Include="..\..\deps\AutoDock-GPU\host\src\main.cpp" />
+    <ClCompile Include="..\..\deps\AutoDock-GPU\host\src\miscellaneous.cpp" />
+    <ClCompile Include="..\..\deps\AutoDock-GPU\host\src\processgrid.cpp" />
+    <ClCompile Include="..\..\deps\AutoDock-GPU\host\src\processligand.cpp" />
+    <ClCompile Include="..\..\deps\AutoDock-GPU\host\src\processresult.cpp" />
+    <ClCompile Include="..\..\deps\AutoDock-GPU\host\src\setup.cpp" />
+    <ClCompile Include="..\..\deps\AutoDock-GPU\wrapcl\src\BufferObjects.cpp" />
+    <ClCompile Include="..\..\deps\AutoDock-GPU\wrapcl\src\CommandQueues.cpp" />
+    <ClCompile Include="..\..\deps\AutoDock-GPU\wrapcl\src\Contexts.cpp" />
+    <ClCompile Include="..\..\deps\AutoDock-GPU\wrapcl\src\Devices.cpp" />
+    <ClCompile Include="..\..\deps\AutoDock-GPU\wrapcl\src\ImportBinary.cpp" />
+    <ClCompile Include="..\..\deps\AutoDock-GPU\wrapcl\src\ImportSource.cpp" />
+    <ClCompile Include="..\..\deps\AutoDock-GPU\wrapcl\src\Kernels.cpp" />
+    <ClCompile Include="..\..\deps\AutoDock-GPU\wrapcl\src\listAttributes.cpp" />
+    <ClCompile Include="..\..\deps\AutoDock-GPU\wrapcl\src\Platforms.cpp" />
+    <ClCompile Include="..\..\deps\AutoDock-GPU\wrapcl\src\Programs.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\deps\AutoDock-GPU\host\src\performdocking.cpp.OpenCL">
+      <FileType>Document</FileType>
+    </ClCompile>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{AE2E0850-B67E-4E0A-A9CD-7FEC5180EC4C}</ProjectGuid>
+    <RootNamespace>AutoDock_GPU</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>autodock_gpu_128wi</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;WIN64;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>cudart_static.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <CudaCompile>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>ALL_DEVICE;WIN32;WIN64;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);N128WI;_WIN64;_AMD64_;WIN32_LEAN_AND_MEAN;NOMINMAX;VERSION="v1.4.3";strincmp=strnicmp</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../../deps/AutoDock-GPU/common;../../deps/AutoDock-GPU/host/inc/;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.2\include;../../deps/AutoDock-GPU/device;../../deps/AutoDock-GPU/wrapcl/inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.2\lib\x64\OpenCL.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <StackReserveSize>10000000</StackReserveSize>
+    </Link>
+    <CudaCompile>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
+      <AdditionalCompilerOptions>
+      </AdditionalCompilerOptions>
+      <Defines>_WIN64;_AMD64_;uint=unsigned int;ulong=unsigned long;ushort=unsigned short;WIN32_LEAN_AND_MEAN;NOMINMAX</Defines>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>

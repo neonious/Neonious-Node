@@ -1,8 +1,8 @@
 {
   "name": "neoniousnode",
   "productName": "Neonious Node",
-  "version": "0.9.0",
-  "description": "Neonious simulation software",
+  "version": "1.0.1",
+  "description": "Neonious mining and simulation software",
   "author": "Neonious GmbH",
   "license": "MIT",
   "main": "index.js",

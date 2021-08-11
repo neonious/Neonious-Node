@@ -10,12 +10,11 @@
 	cd setup
 	. compile_deps.opencl.sh
 	cd ..
-	
-	(only on Windows)
-	Do the compile steps written below or
-	copy https://www.neonious.org/static/neonious-node-engine-0.9.0-win.zip
-	to engine to reuse precompiled, signed binaries
 
+	(only on Windows)
+	copy https://www.neonious.org/static/neonious-node-engine-cuda-1.0.0-win.zip
+	or copy https://www.neonious.org/static/neonious-node-engine-opencl-1.0.0-win.zip
+	to engine
 
 ## Run development version:
 
@@ -32,7 +31,15 @@ Thus, please use the officially packed releases.
 
 # WINDOWS COMPILATION INSTRUCTIONS OF ENGINES
 
-Goal: Create executables which run on any system with Cuda 11.2 installed
+This part is very much manual work. Not automized well.
+
+Instead, consider using the packages
+https://www.neonious.org/static/neonious-node-engine-cuda-1.0.0-win.zip
+https://www.neonious.org/static/neonious-node-engine-opencl-1.0.0-win.zip
+
+Goal: Create executables which run on any system with Cuda 11.2
+or OpenCL installed
+
 
 ## Compile autogrid4
 
@@ -59,20 +66,28 @@ then add static and static-libstdc++in Makefile
 
 Copy executable into engine directory
 
+
 ## Compile AutoDock-GPU
 
-Use Visual Studio 2019 Project in deps_win/AutoDock-GPU
+Use Visual Studio 2019 Project in setup/AutoDock-GPU or setup/AutoDock-GPU-OpenCL
+
+You need to rename deps/AutoDock-GPU/host/inc/performdocking.h.Cuda
+or deps/AutoDock-GPU/host/inc/performdocking.h.OpenCL to
+deps/AutoDock-GPU/host/inc/performdocking.h
+
 Copy executable into engine directory
+
 
 ## Compile Gromacs
 
 There are several steps needed for Gromacs to compile under Visual Studio 2019
 
 Use CMake GUI to generate Makefiles
-install directory set to <PROJECT_DIR>/engine_win/gromacs
+install directory set to <PROJECT_DIR>/engine/gromacs
 
 	GMX_GPU = CUDA
 	GMX_FFT_LIBRARY = mkl
+	GMXAPI=off
 	MKL_INCLUDE_DIR = C:/Program Files (x86)/Intel/oneAPI/mkl/2021.1.1/include;C:/Program Files (x86)/Intel/oneAPI/mkl/2021.1.1/include/intel64
 	MKL_LIBRARIES = C:/Program Files (x86)/Intel/oneAPI/mkl/2021.1.1/lib/intel64/mkl_rt.lib
 	BUILD_TESTING off
@@ -107,3 +122,20 @@ cmake --install .
 
 copy mkl redist + intel compiler redist + vcruntime140.dll + vcomp140.dll into engine/gromacs/bin
 These libraries may all be redistributed.
+
+
+## Compile ethminer
+
+Copy setup/ethminer.Hunter.config.cmake as shown in setup/compile_deps.cuda.sh
+
+Native Perl must be installed, msys2 perl does not work.
+Otherwise CMake will bail out at OpenSSL
+
+OpenCL.lib must be taken from non-Hunter, because the Hunter version does not work
+
+On Windows we also do the following, to potentially get around not so intelligent AntiVirus software:
+Renamed executable from ethminer to neonmine
+Renamed mentions of ethminer to neonmine in ethminer-buildinfo project
+Removed ethminer.rc (icon)
+
+Also we removed support for Intel in CLMiner.cpp

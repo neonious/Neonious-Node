@@ -305,4 +305,8 @@ function serverStatusChanged(status) {
         depositWindow.webContents.send('sendFrontend', 'serverStatusChanged', serverStatus);
 }
 
-module.exports = { init, createWindow, createSettings, createDeposit, logChanged, serverStatusChanged };
+function mineStatus(status, hashRate) {
+    console.log("MINESTATUS", status, hashRate);
+}
+
+module.exports = { init, createWindow, createSettings, createDeposit, logChanged, serverStatusChanged, mineStatus };

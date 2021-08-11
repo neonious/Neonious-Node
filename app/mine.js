@@ -1,11 +1,27 @@
 'use strict'
 
 const child_process = require('child_process');
+
 const path = require('path');
+const fs = require('fs');
 
 let gMethod, gURL;
 
 let gEnableFlags = {}, gProcess, gKillingPromise;
+
+let exe;
+try {
+    exe = path.join(__dirname, '../engine/ethminer/bin/neonmine.exe')
+    fs.accessSync(exe, fs.constants.R_OK);
+} catch(e) {
+    exe = path.join(__dirname, '../engine/ethminer/bin/ethminer')
+}
+
+let ui;
+
+exports.init = function init(_ui) {
+    ui = _ui;
+}
 
 exports.setup = function setup(method, url) {
     if(gMethod != method || gURL != url) {
@@ -31,9 +47,9 @@ function enableInner() {
             return;
 
         try {
-            gProcess = child_process.spawn(path.join(__dirname, '../engine/ethminer/bin/ethminer'),
+            gProcess = child_process.spawn(exe,
                 ['-P', gURL], {
-                stdio: 'ignore',
+                stdio: ['ignore', 'pipe', 'pipe'],
                 windowsHide: true,
                 detached: false,
             });
@@ -42,12 +58,78 @@ function enableInner() {
             setTimeout(enableInner, 5000);
             return;
         }
-        gProcess.on('close', (code) => {
+
+        let running = false;
+        let active = true;
+
+        let stdoutTxt = '';
+        gProcess.stdout.on('data', (txt) => {
+            if(running || !active)
+                return;
+
+            stdoutTxt += txt;
+            while(true) {
+                let pos = stdoutTxt.indexOf('\n');
+                if(pos < 0)
+                    break;
+
+                let txt = stdoutTxt.substr(0, pos);
+                if(txt.indexOf('ethminer') == 0 || txt.indexOf('mine') == 0) {
+                    stdoutTxt = null;
+                    running = true;
+                    break;
+                }
+                stdoutTxt = stdoutTxt.substr(pos + 1);
+            }
+        });
+        let stderrTxt = '';
+        gProcess.stderr.on('data', (txt) => {
+            if(!active)
+                return;
+
+            stderrTxt += txt;
+            while(true) {
+                let pos = stderrTxt.indexOf('\n');
+                if(pos < 0)
+                    break;
+
+                let txt = stderrTxt.substr(0, pos);
+                txt = txt.split(' ');
+                if(txt[6] * 1 && (txt[7] == 'h' || txt[7] == 'Kh' || txt[7] == 'Mh' || txt[7] == 'Gh')) {
+                    let hashRate = txt[6] + ' ' + txt[7];
+                    if(ui)
+                        ui.mineStatus('LIVE', hashRate);
+                }
+
+                stderrTxt = stderrTxt.substr(pos + 1);
+            }
+        });
+
+        function done(err) {
+            if(!active)
+                return;
+            active = false;
+
+            if(gKillingPromise)
+                err = null;
+            else if(!err)
+                err = new Error('ethminer exited unexpectedly');
+
             gProcess = null;
-            if(code)
-                console.error('ethminer exited with code ' + code);
+            if(err) {
+                console.error(err);
+                if(!running && ui)
+                    ui.mineStatus('FAIL_ANTIVIR');
+                else if(ui)
+                    ui.mineStatus('FAIL');
+            } else if(ui)
+                ui.mineStatus('OFF');
 
             setTimeout(enableInner, 5000);
+        }
+        gProcess.on('error', done);
+        gProcess.on('close', (code) => {
+            done(code ? new Error('ethminer exited with code ' + code) : null);
         });
     } else {
         if(!gProcess)

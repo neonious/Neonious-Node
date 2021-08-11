@@ -136,12 +136,6 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-if="!this.running">
-          <td colspan="3">There is currently no active job. Make sure your software will work when the time comes.</td>
-          <td colspan="2">
-            <button class="btn btn-primary" @click="test">Test</button>
-          </td>
-        </tr>
         <tr v-for="item in log.slice().reverse()">
           <td class="text-nowrap">{{item.date}}</td>
           <td class="text-nowrap">{{item.action}}</td>
