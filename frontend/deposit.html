@@ -17,15 +17,34 @@
 <body>
     <div id="app">
         <div style="padding: 20px">
-            <h3 style="margin-bottom: 20px"><img src="info.svg" width="40" height="40" style="vertical-align: -9px"> Why are we asking for a deposit?</h3>
-            <p>The Neonious simulation software is Open Source and anyone can inspect the code. This also means anyone can easily modify the code to fake simulation results and get rewarded faster than others.</p>
-            <p>To counter this, everyone who is taking part in the simulations has to first deposit MDSIMs. The simulation results are randomly verified. Whoever is caught faking results, gets penalized by taking away MDSIMs from the deposit. This concept Neonious Biotech took from Filecoin, where it is called <i>Slashing</i>.</p>
-            <p>Honest users can dissolve the deposit at any time by requesting a transfer of the deposited MDSIMs, which might have grown in value over time, to their wallet.</p>
-                <h3 style="margin-bottom: 20px; margin-top: 30px"><img src="info.svg" width="40" height="40" style="vertical-align: -9px"> Wallet transfer information</h3>
-            <p><b>How to add funds to your wallet</b><br>Swap ETH or tokens for MDSIMs on the <a @click="openTokenSale" href="https://www.neonious.org/en/TradeMDSIM" target="_blank" >Neonious trading page</a>, then transfer the MDSIMs to the following Ethereum address:<br><input class="form-control" style="display: inline-block; background-color: white; width: 420px" readonly v-model="serverStatus.deposit_address"> <button @click="copyAddress" class="btn btn-primary">Copy Address</button><br>
+            <h3 style="margin-bottom: 20px"><img src="info.svg" width="40" height="40" style="vertical-align: -9px"> Wallet transfer information</h3>
+            <p><b><u>How to retrieve the funds in your wallet</u></b><br>
+                You can initate a transfer of the funds in the wallet to your payout address here: <button :disabled="!!serverStatus.pay_out_pending" @click="payOut" class="btn btn-primary" style="margin-left: 5px">Initiate Pay Out</button> <span v-if="serverStatus.pay_out_pending" style="color: darkgreen; margin-left: 10px">Initiated...</span> <br>
+                <small>Minimum amount to pay out: 2,000 MDSIMs, pay out wait period: 72 hours.
+                The Ethereum network fee for the transfer is subtracted from the pay out. We do not add fees from our side.</small></p>
+            <p><b><u>How to add funds to your wallet</u></b><br>Swap ETH or tokens for MDSIMs on the <a @click="openTokenSale" style="text-decoration: underline" href="https://www.neonious.org/en/TradeMDSIM" target="_blank">MDSIM trading page</a>, then transfer the MDSIMs to the following Ethereum address:<br><input class="form-control" style="display: inline-block; background-color: white; width: 420px" readonly v-model="serverStatus.deposit_address"> <button @click="copyAddress" class="btn btn-primary">Copy Address</button><br>
                 <small>The minute the funds arrive, the deposit shown in our software will be updated.</small></p>
-            <p><b>How to retrieve the funds in your wallet</b><br>You can initate a transfer of the funds in the wallet to your payout address here: <button :disabled="!!serverStatus.pay_out_pending" @click="payOut" class="btn btn-primary" style="margin-left: 5px">Initiate Pay Out</button> <span v-if="serverStatus.pay_out_pending" style="color: darkgreen; margin-left: 10px">Initiated...</span> <br>
-                <small>Please note that the transfers are done once within 24 hours. The Ethereum network fee for the transfer is subtracted from the pay out. We do not add fees from our side.</small></p>
+            <h3 style="margin-bottom: 20px; margin-top: 30px"><img src="info.svg" width="40" height="40" style="vertical-align: -9px"> Why a deposit allows you to earn more sooner</h3>
+            <p><b>You can find statistics on what earnings are achievable with which deposit on our website:</b> <a href="https://www.neonious.org/en/Statistics" @click="openNeoniousStats" style="text-decoration: underline" target="_blank">Neonious Statistics</a></p>
+            <p><b>Summary:</b> Highly paid computational tasks can only be given to users with enough MDSIMs in their wallet, so a collateral exists to be able to penalize fake results.
+ While you can let the MDSIMs accumulate just with cryptocurrency mining, which is possible without collateral, a deposit of MDSIMs allows you to earn more sooner.</p>
+<p><b>Detailed explanation:</b><br>
+
+Next to simple cryptocurrency mining,
+    Neonious Node can run highly paid computational science tasks,
+    allowing the users of Neonious Node to earn more than just by
+    doing cryptocurrency mining.</p>
+
+    <p>First, when the network is not fully utilized and there are multiple nodes to give the computational science tasks to, the system
+    will more often than not prefer the nodes with the wallets with the most MDSIMs, as an incentive to hold MDSIMs.</p>
+<p>Second, a minimum amount of MDSIMs must be in the wallet, in any case, to be able to receive computational science tasks at all:</p>
+<p>To keep the system fair and not allow users to earn with fake results, all computations, both
+    cryptocurrency mining and computational science computations have to
+    be verified by other parties. However, unlike mining results, computational science computations cannot
+    be quickly verified. To verify that the results are valid, parts of the
+    computations have to done twice. If there is no penality for the users
+    in case they hand in fake results, the network would quickly be overloaded.</p>
+ <p>Thus, everyone who is taking part in the computational science tasks needs to have a minimum amount of MDSIMs in their wallet. The results are then randomly verified. Whoever is caught faking results, gets penalized by taking away MDSIMs from their deposit. This concept is also used by other cryptocurrencies, where it is called <i>Slashing</i>.</p>
             <button class="btn btn-secondary" @click="close">Close</button>
         </div>
     </div>
@@ -86,6 +105,11 @@
                 },
                 copyAddress: function() {
                     window.sendBackend('copyDepositAddress');
+                    alert("The Ethereum address to send funds to is now in your clipboard, ready to be pasted.")
+                },
+                openNeoniousStats: function(e) {
+                    e.preventDefault();
+                    window.sendBackend('openNeoniousStats');
                 }
             }
         });

@@ -13,7 +13,7 @@ exports.init = async function(_uiMode, _server, _mine) {
     mine = _mine;
 
 	settingsPath = uiMode ? path.join(require('electron').app.getPath('userData'), 'settings.json') : path.join(__dirname, '../settings.json');
-//    try { await fs.promises.unlink(settingsPath); } catch(e) {}
+ //   try { await fs.promises.unlink(settingsPath); } catch(e) {}
 
     try {
         exports.data = JSON.parse(await fs.promises.readFile(settingsPath, 'utf8'));
@@ -27,8 +27,8 @@ exports.init = async function(_uiMode, _server, _mine) {
 
 exports.set = async function(data) {
     if(uiMode && data.systemStart != exports.data.systemStart) {
-	const AutoLaunch = require('auto-launch');
-	const { dialog } = require('electron');
+        const AutoLaunch = require('auto-launch');
+        const { dialog } = require('electron');
 
         try {
             const autoLauncher = new AutoLaunch({name: 'Neonious Node'});

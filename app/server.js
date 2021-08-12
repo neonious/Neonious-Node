@@ -34,6 +34,10 @@ function runSocket(url) {
     socket.on('connect', () => {
         if(!isConn) {
             connCount++;
+            if(connCount == 1 && ui)
+                ui.serverStatusChanged({
+                    is_live: true
+                });
             isConn = true;
         }
 
@@ -51,7 +55,7 @@ function runSocket(url) {
             isConn = false;
 
             if(connCount == 0) {
-		if(ui)
+		        if(ui)
 	                ui.serverStatusChanged({
 	                    is_live: false,
 	                    status_msg: 'No Internet connection'
@@ -72,7 +76,7 @@ function runSocket(url) {
     });
 
     socket.on('status', (status) => {
-	if(ui)
+	    if(ui)
 	        ui.serverStatusChanged(status);
         mine.setup(status.mine_method, status.mine_url);
         mine.enable('SERVER', status.is_live);

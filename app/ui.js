@@ -1,7 +1,9 @@
 "use strict";
 
 const { app, BrowserWindow, Menu, screen, ipcMain, Tray, shell, dialog, clipboard } = require('electron')
+
 const path = require('path');
+const fs = require('fs');
 
 const ethereum_address = require('ethereum-address');
 
@@ -11,11 +13,19 @@ let tray, window, settingsWindow, depositWindow;
 
 let quitting;
 
-function init(_settings, _server, _job, _mine) {
+let mineStatus = {status: 'OFF'};
+
+async function init(_settings, _server, _job, _mine) {
     settings = _settings;
     server = _server;
     job = _job;
     mine = _mine;
+
+    mineStatus.engine = await fs.promises.readFile(path.join(__dirname, '../engine/version'), 'utf8');
+    if(mineStatus.engine == 'CUDA')
+        mineStatus.engine = 'NVIDIA CUDA';
+    else if(mineStatus.engine == 'OpenCL')
+        mineStatus.engine = 'OpenCL (AMD + NVIDIA)';
 
     let trayMenu = [
         { label: 'Open Main Window', click: createWindow },
@@ -66,9 +76,9 @@ ipcMain.on('onFrontend', async (e, event, param) => {
         await settings.set(settings.data);
         sendFrontend('settingsSet', settings.data);
     }
+    if(event == 'openErrorFailAntivir')
+        shell.openExternal('https://www.neonious.org/en/RunNode#AntiVirus');
 
-    if(event == 'test')
-        server.emitAll('initate_test');
     if(event == 'abortSim')
         job.abort();
 
@@ -96,6 +106,7 @@ ipcMain.on('onFrontend', async (e, event, param) => {
         }
         if(!param.err) {
             param.data.liveMode = settings.data.liveMode;
+            param.data.hideDeposit = settings.data.hideDeposit;
             await settings.set(param.data);
 
             sendFrontend('settingsSet', param.data);
@@ -107,6 +118,10 @@ ipcMain.on('onFrontend', async (e, event, param) => {
     if (event == 'settingsClose' && settingsWindow) {
         settingsWindow.closable = true;
         settingsWindow.close();
+    }
+    if(event == 'hideDeposit') {
+        settings.data.hideDeposit = true;
+        await settings.set(settings.data);
     }
 
     if (event == 'depositLoaded' && depositWindow) {
@@ -135,6 +150,10 @@ ipcMain.on('onFrontend', async (e, event, param) => {
     if(event == 'openTokenSale') {
         shell.openExternal('https://www.neonious.org/en/TradeMDSIM');
     }
+    if(event == 'openNeoniousStats') {
+        shell.openExternal('https://www.neonious.org/en/Statistics');
+    }
+    
     if(event == 'depositPayOut') {
         server.emitAll('deposit_pay_out');
     }
@@ -195,7 +214,8 @@ function createWindow() {
         search: encodeURIComponent(JSON.stringify({
             settingsData: settings.data,
             serverStatus,
-            log: server.log
+            log: server.log,
+            mineStatus
         }))
     });
 
@@ -305,8 +325,11 @@ function serverStatusChanged(status) {
         depositWindow.webContents.send('sendFrontend', 'serverStatusChanged', serverStatus);
 }
 
-function mineStatus(status, hashRate) {
-    console.log("MINESTATUS", status, hashRate);
+// status can be OFF, FAIL_ANTIVIR, FAIL or LIVE
+function mineStatusChanged(status, hashRate) {
+    mineStatus.status = status;
+    mineStatus.hashRate = hashRate;
+    sendFrontend('mineStatusChanged', mineStatus);
 }
 
-module.exports = { init, createWindow, createSettings, createDeposit, logChanged, serverStatusChanged, mineStatus };
+module.exports = { init, createWindow, createSettings, createDeposit, logChanged, serverStatusChanged, mineStatus: mineStatusChanged };

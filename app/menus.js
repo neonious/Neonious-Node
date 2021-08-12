@@ -84,11 +84,18 @@ exports.build = (ui, _autoUpdater) => {
             click: () => {
                 shell.openExternal('https://www.neonious.org/')
             }
-        },
-        {
+        }, {
+            type: 'separator'
+        }, {
             label: 'Trade MDSIMs',
             click: () => {
                 shell.openExternal('https://www.neonious.org/en/TradeMDSIM')
+            }
+        },
+        {
+            label: 'Neonious Statistics',
+            click: () => {
+                shell.openExternal('https://www.neonious.org/en/Statistics')
             }
         }]
     }];

@@ -86,44 +86,70 @@
 
 <body>
   <div id="app">
-    <div class="row" style="background-color: #eee; padding-left: 20px; padding-right: 20px">
-      <div class="col" style="padding: 20px">
-        <div v-if="depositFormatted">
-          <b>Wallet:</b> {{depositFormatted}} MDSIM <small v-if="depositUSDFormatted">({{depositUSDFormatted}} USD)</small>
+    <div class="container-fluid alert" style="margin: 0; background-color: #eee">
+      <div class="row">
+        <div class="col-4">
+          <div v-if="depositFormatted">
+            <b>Wallet:</b> {{depositFormatted}} MDSIM <small v-if="depositUSDFormatted">({{depositUSDFormatted}}
+              USD)</small>
+          </div>
+          <div v-if="!depositFormatted">
+            <b>Wallet:</b> not set up
+          </div>
         </div>
-        <div v-if="!depositFormatted">
-          <b>Wallet:</b> not set up
+        <div class="col-4" style="text-align: center">
+          <div v-if="!settingsData.walletAddr">
+            <div class="led-red"></div> Need settings set to activate node
+          </div>
+          <div v-if="settingsData.walletAddr && settingsData.liveMode && (mineStatus.status == 'FAIL' || mineStatus.status == 'FAIL_ANTIVIR')">
+            <div class="led-red"></div> Error running node
+          </div>
+          <div v-if="settingsData.walletAddr && settingsData.liveMode && mineStatus.status != 'FAIL'  && mineStatus.status != 'FAIL_ANTIVIR'">
+            <div v-if="!serverStatus.is_live && serverStatus.status_msg" class="led-red"></div>
+            <div v-if="serverStatus.is_live || !serverStatus.status_msg" class="led-green"></div>
+            <span v-if="serverStatus.status_msg">{{serverStatus.status_msg}}</span>
+            <span v-if="!serverStatus.status_msg">Node is active</span>
+          </div>
+          <div v-if="settingsData.walletAddr && !settingsData.liveMode">
+            <div class="led-yellow"></div> Not active on user's wish
+          </div>
+        </div>
+        <div class="col-4" style="text-align: right">
+          <b-form-checkbox switch v-model="settingsLiveMode">Node active</b-form-checkbox>
         </div>
       </div>
-      <div class="col" style="padding: 20px; text-align: center">
-        <div v-if="running">
-          <div class="led-green-blink"></div> Running simulation
-        </div>
-        <div v-if="!running && !settingsData.walletAddr">
-          <div class="led-red"></div> Need settings set to activate node
-        </div>
-        <div v-if="!running && settingsData.walletAddr && settingsData.liveMode">
-          <div v-if="!serverStatus.is_live && serverStatus.status_msg" class="led-red"></div>
-          <div v-if="serverStatus.is_live || !serverStatus.status_msg" class="led-green"></div>
-          <span v-if="serverStatus.status_msg">{{serverStatus.status_msg}}</span>
-          <span v-if="!serverStatus.status_msg">Node is live</span>
-        </div>
-        <div v-if="!running && settingsData.walletAddr && !settingsData.liveMode">
-          <div class="led-yellow"></div> Not active on user's wish
-        </div>
+    </div>
+    <div v-if="settingsData.walletAddr && settingsData.liveMode && mineStatus.status != 'FAIL' && mineStatus.status != 'FAIL_ANTIVIR'" class="container-fluid alert alert-success"
+      style="margin: 0" role="alert">
+      <div class="row">
+        <div class="col-4"><b>Engine:</b> {{mineStatus.engine}}</div>
+        <div class="col-4" style="text-align: center"><span v-if="mineStatus.hashRate"><b>Ethereum Hashrate:</b>
+            {{mineStatus.hashRate}}</span></div>
+        <div class="col-4" style="text-align: right"><b>Next pay:</b> 1 AM GMT (2h, 23m left)</div>
       </div>
-      <div class="col" style="padding: 20px; text-align: right">
-        <b-form-checkbox switch v-model="settingsLiveMode">Node active</b-form-checkbox>
+    </div>
+    <div v-if="settingsData.walletAddr && settingsData.liveMode && mineStatus.status == 'FAIL'" class="container-fluid alert alert-danger"
+      style="margin: 0" role="alert">
+      <div class="row">
+        <div class="col-2"><b>Engine:</b> {{mineStatus.engine}}</div>
+        <div class="col-10">Failed to activate node. Please make sure that you have GPUs which support the engine used (see left), that all GPUs have at least 8 GB of RAM and that all required software is installed (CUDA Toolkit v11.2 / OpenCL driver).</div>
+      </div>
+    </div>
+    <div v-if="settingsData.walletAddr && settingsData.liveMode && mineStatus.status == 'FAIL_ANTIVIR'" class="container-fluid alert alert-danger"
+      style="margin: 0" role="alert">
+      <div class="row">
+        <div class="col-2"><b>Engine:</b> {{mineStatus.engine}}</div>
+        <div class="col-10">Failed to activate node. Either you do not have the needed software installed (CUDA Toolkit v11.2 / OpenCL driver), or your antivirus software (additionally installed or Windows Defender) deleted/blocked our engine executables. In this case, selectivly disable your antivirus software and reinstall Neonious Node.  <a @click="openErrorFailAntivir" style="text-decoration: underline" href="https://www.neonious.org/en/RunNode#AntiVirus" target="_blank">More Info</a></div>
       </div>
     </div>
     <div v-if="!settingsData.walletAddr" class="alert alert-primary" style="margin: 0" role="alert">Welcome to our
       software Neonious Node. As a first step, please give us the needed information to start.
       <button class="btn btn-primary" style="margin-left: 10px" @click="openSettings">Open Settings</button>
     </div>
-    <div
-      v-if="settingsData.walletAddr && !deposit"
-      class="alert alert-primary" style="margin: 0" role="alert">You have no MDSIMs in your wallet. Consider transfering MDSIMs to your wallet to receive higher paid work.
+    <div v-if="settingsData.walletAddr && !deposit && !settingsData.hideDeposit" class="alert alert-primary" style="margin: 0" role="alert">You have
+      no MDSIMs in your wallet. Consider transfering MDSIMs to your wallet to receive higher paid work.
       <button class="btn btn-primary" style="margin-left: 10px" @click="openDeposit">Explain More</button>
+      <button class="btn btn-secondary" style="margin-left: 10px" @click="hideDeposit">Hide Message</button>
     </div>
     <table class="table">
       <thead>
@@ -178,7 +204,7 @@
     }
 
     const params = JSON.parse(decodeURIComponent(location.search.substr(1))); // skip ?
-    for(let i = 0; i < params.log.length; i++) {
+    for (let i = 0; i < params.log.length; i++) {
       params.log[i].earnedFormatted = formatNo(params.log[i].earned, 2);
       params.log[i].depositFormatted = formatNo(params.log[i].deposit, 2);
     }
@@ -192,9 +218,9 @@
         serverStatus: params.serverStatus,
         log: params.log,
         deposit: params.log.length ? params.log[params.log.length - 1].deposit : 0,
-        depositUSDFormatted: params.serverStatus.rate_usd === undefined ? undefined : formatNo((params.log.length ? params.log[params.log.length - 1].deposit : 0) * this.serverStatus.rate_usd, 2),
+        depositUSDFormatted: params.serverStatus.rate_usd === undefined ? undefined : formatNo((params.log.length ? params.log[params.log.length - 1].deposit : 0) * params.serverStatus.rate_usd, 2),
         depositFormatted: params.log.length ? params.log[params.log.length - 1].depositFormatted : '0.00',
-        running: false//params.log.length && !params.log[params.log.length - 1].end
+        mineStatus: params.mineStatus
       },
       watch: {
         settingsLiveMode: function (val) {
@@ -208,11 +234,21 @@
         openDeposit: () => {
           sendBackend('openDeposit');
         },
+        openErrorFailAntivir: (e) => {
+          e.preventDefault();
+          sendBackend('openErrorFailAntivir');
+        },
+        hideDeposit: function() {
+          alert("We will hide this message now.\n\nIn the future, to access your wallet's deposit or withdrawal instructions, please go to the File menu.")
+
+          this.settingsData.hideDeposit = true;
+          sendBackend('hideDeposit');
+        },
         test: () => {
           sendBackend('test');
         },
         abortSim: () => {
-          if(confirm("Are you sure you wish to abort the simulation? If this is a paid simulation, this will result into no MDSIMs earned."))
+          if (confirm("Are you sure you wish to abort the simulation? If this is a paid simulation, this will result into no MDSIMs earned."))
             sendBackend('abortSim');
         }
       }
@@ -222,19 +258,21 @@
       if (event == 'settingsSet')
         App._data.settingsData = param;
       if (event == 'logChanged') {
-        for(let i = 0; i < param.length; i++) {
+        for (let i = 0; i < param.length; i++) {
           param[i].earnedFormatted = formatNo(param[i].earned, 2);
           param[i].depositFormatted = formatNo(param[i].deposit, 2);
         }
         App._data.log = param;
         App._data.deposit = param.length ? param[param.length - 1].deposit : 0;
         App._data.depositUSDFormatted = App._data.serverStatus.rate_usd === undefined ? undefined : formatNo((param.length ? param[param.length - 1].deposit : 0) * App._data.serverStatus.rate_usd, 2),
-        App._data.depositFormatted = param.length ? param[param.length - 1].depositFormatted : '0.00'
-     //   App._data.running = param.length && !param[param.length - 1].end;
+          App._data.depositFormatted = param.length ? param[param.length - 1].depositFormatted : '0.00'
       }
       if (event == 'serverStatusChanged') {
         App._data.depositUSDFormatted = param.rate_usd === undefined ? undefined : formatNo((App._data.log.length ? App._data.log[App._data.log.length - 1].deposit : 0) * param.rate_usd, 2),
-        App._data.serverStatus = param;
+          App._data.serverStatus = param;
+      }
+      if (event == 'mineStatusChanged') {
+        App._data.mineStatus = param;
       }
     });
   </script>

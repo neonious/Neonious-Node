@@ -32,7 +32,7 @@ app.on('ready', async () => {
     await job.init(true, server, mine);
     await server.init(ui, job, mine);
 
-    ui.init(settings, server, job, mine);
+    await ui.init(settings, server, job, mine);
     Menu.setApplicationMenu(menus.build(ui, autoUpdater));
 
     ui.createWindow();
