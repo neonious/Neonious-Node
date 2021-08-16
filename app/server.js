@@ -8,6 +8,8 @@ const fs = require('fs');
 const process = require('process');
 const os = require('os');
 
+const util = require('./util');
+
 let sockets = [];
 let connCount = 0;
 
@@ -96,32 +98,11 @@ function runSocket(url) {
             cb({busy: true});
     });
 
-    let logSaveNeeded = false, logSaving = false;
-    async function saveLog() {
-        if(logSaving)
-            logSaveNeeded = true;
-        else {
-            logSaving = true;
-            logSaveNeeded = false;
-            try {
-                await fs.promises.writeFile(logPath + '.tmp', JSON.stringify(module.exports.log, null, 2));
-                try {
-                    await fs.promises.unlink(logPath);
-                } catch(e) {}
-                await fs.promises.rename(logPath + '.tmp', logPath);
-            } catch(e) {
-                console.error(e);
-            }
-            logSaving = false;
-            if(logSaveNeeded)
-                saveLog();
-        }
-    }
     socket.on('log', (log) => {
         module.exports.log = log;
-	if(ui)
+    	if(ui)
 	        ui.logChanged();
-        saveLog();
+        await util.writeFile(logPath, JSON.stringify(module.exports.log, null, 2));
     });
 }
 

@@ -10,6 +10,8 @@ const url = require('url');
 const unzipper = require('unzipper');
 const archiver = require('archiver');
 
+const util = require('./util');
+
 let workPath, childProcess;
 let origCWD = process.cwd();
 
@@ -24,7 +26,7 @@ exports.init = async function init(_uiMode, _server, _mine) {
     server = _server;
     mine = _mine;
 
-   workPath = uiMode ? path.join(require('electron').app.getPath('userData'), 'work') : path.join(__dirname, '../work');
+    workPath = uiMode ? path.join(require('electron').app.getPath('userData'), 'work') : path.join(__dirname, '../work');
 
     try {
         await fs.promises.mkdir(workPath);
@@ -98,6 +100,10 @@ async function innerRun(params) {
 	let workDir = path.join(workPath, new Date().getTime() + '');
 
 	try {
+        const engine = mine.engine;
+        if(!engine)
+            throw new Error('mining engine not set');
+
         await fs.promises.rmdir(workDir, { recursive: true, force: true, maxRetries: 3 });
         await fs.promises.mkdir(workDir);
 
@@ -178,11 +184,11 @@ async function innerRun(params) {
                         childProcess = null;
 
                         if(stdout)
-                            await fs.promises.writeFile(path.join(subWorkDir, 'command-' + i + '.stdout.txt'), stdout);
+                            await util.writeFile(path.join(subWorkDir, 'command-' + i + '.stdout.txt'), stdout);
                         if(stderr)
-                            await fs.promises.writeFile(path.join(subWorkDir, 'command-' + i + '.stderr.txt'), stderr);
+                            await util.writeFile(path.join(subWorkDir, 'command-' + i + '.stderr.txt'), stderr);
                         if(err)
-                            await fs.promises.writeFile(path.join(subWorkDir, 'command-' + i + '.err.txt'), err.message);
+                            await util.writeFile(path.join(subWorkDir, 'command-' + i + '.err.txt'), err.message);
 
                         if(err)
                             reject(err);
@@ -199,11 +205,11 @@ async function innerRun(params) {
             else if(exe == 'mine' && cmd[0] == 'off')
                 await mine.enable('JOB', false);
             else if(exe == 'gmx')
-                await execFile(GMX_BIN, cmd);
+                await execFile(GMX_BIN + '_' + engine, cmd);
             else if(exe == 'autogrid4')
                 await execFile(AUTOGRID4_BIN, cmd);
             else if(exe == 'autodock_gpu_128wi')
-                await execFile(AUTODOCK_GPU_BIN, cmd);
+                await execFile(AUTODOCK_GPU_BIN + '_' + engine, cmd);
             else
                 throw new Error('unknown command ' + cmd);
         }

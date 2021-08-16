@@ -20,7 +20,7 @@ exports.setup = function setup(method, url, engine) {
         exports.enable('URL_CHANGE', false);
         gMethod = method;
         gURL = url;
-        gEngine = engine;
+        exports.engine = gEngine = engine;
         exports.enable('URL_CHANGE', true);
     }
 }

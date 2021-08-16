@@ -4,6 +4,8 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
+const util = require('./util');
+
 let settingsPath;
 let uiMode, server, mine;
 
@@ -21,7 +23,7 @@ exports.init = async function(_uiMode, _server, _mine) {
     } catch(e) {
         exports.data = {nodeID: crypto.randomBytes(16).toString('hex').toUpperCase(), 
             liveMode: true, engine: 'ocl'};
-	    await fs.promises.writeFile(settingsPath, JSON.stringify(exports.data, null, 2));
+	    await util.writeFile(settingsPath, JSON.stringify(exports.data, null, 2));
     }
     mine.enable('CLIENT', exports.data.liveMode);
 }
@@ -45,7 +47,7 @@ exports.set = async function(data) {
     data.nodeID = exports.data.nodeID;
 
     exports.data = data;
-    await fs.promises.writeFile(settingsPath, JSON.stringify(data, null, 2));
+    await util.writeFile(settingsPath, JSON.stringify(data, null, 2));
 
     server.settingsChanged(data);
     mine.enable('CLIENT', data.liveMode);

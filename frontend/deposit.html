@@ -108,7 +108,7 @@ Next to simple cryptocurrency mining,
                     else if(amount < this.serverStatus.minPayout)
                         alert("The " + formatNo(amount, 2) + " MDSIM, which you are requesting to pay out is less than the minimum of "
                         + formatNo(this.serverStatus.minPayout, 2) + " MDSIM.");
-                    else if(confirm("The Ethereum network fee for the transfer will be subtracted from the deposit on payout and swapping for ETH or stablecoin will also cost additional fees.\n\nOn the other side, we believe it to be a good strategy to hold the MDSIMs as they will rise in value on the long term because Neonious Biotech will be awarded more drug discovery and analysis contracts over time which will be processed with MDSIMs.\n\nAre you sure you wish to dissolve your deposit?")) {
+                    else if(confirm("The Ethereum network fee for the transfer will be subtracted from the payout and swapping for ETH or stablecoin will also cost you additional fees.\n\nOn the other side, we believe it to be a good strategy to hold the MDSIM as they will rise in value on the long term because Neonious will run more highly paid computational research over time which will be processed with MDSIM.\n\nAre you sure you wish to pay out the amount?")) {
                         window.sendBackend('depositPayOut', amount);
                         this.payoutAmount = '';
                     }
