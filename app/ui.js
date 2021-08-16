@@ -21,12 +21,6 @@ async function init(_settings, _server, _job, _mine) {
     job = _job;
     mine = _mine;
 
-    mineStatus.engine = await fs.promises.readFile(path.join(__dirname, '../engine/version'), 'utf8');
-    if(mineStatus.engine == 'CUDA')
-        mineStatus.engine = 'NVIDIA CUDA';
-    else if(mineStatus.engine == 'OpenCL')
-        mineStatus.engine = 'OpenCL (AMD + NVIDIA)';
-
     let trayMenu = [
         { label: 'Open Main Window', click: createWindow },
         { type: 'separator' },
@@ -128,8 +122,9 @@ ipcMain.on('onFrontend', async (e, event, param) => {
         // Things change in-between. TODO: find better solution than sending twice
         depositWindow.webContents.send('sendFrontend', 'serverStatusChanged', serverStatus);
 
+        const setHeight = ((param + 1) | 0) - 300;
         const width = depositWindow.getSize()[0];
-        depositWindow.setContentSize(width, (param + 1) | 0);
+        depositWindow.setContentSize(width, setHeight);
 
         const height = depositWindow.getSize()[1];
         depositWindow.setMinimumSize(width, height);
@@ -295,7 +290,7 @@ function createDeposit() {
         maximizable: false,
         useContentSize: true,
         show: false,
-        closable: false,
+        closable: true,
         parent: window ? window : undefined,
         modal: true,
         autoHideMenuBar: true,

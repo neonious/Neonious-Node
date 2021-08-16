@@ -34,8 +34,7 @@ Thus, please use the officially packed releases.
 This part is very much manual work. Not automized well.
 
 Instead, consider using the packages
-https://www.neonious.org/static/neonious-node-engine-cuda-1.0.0-win.zip
-https://www.neonious.org/static/neonious-node-engine-opencl-1.0.0-win.zip
+https://www.neonious.org/static/neonious-node-engine-1.0.0-win.zip
 
 Goal: Create executables which run on any system with Cuda 11.2
 or OpenCL installed

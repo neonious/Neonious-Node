@@ -19,11 +19,16 @@
         <div style="padding: 20px">
             <form @submit="settingsSet">
                 <div class="form-group">
+                    Engine:
+                    <label for="engineCUDA" style="margin-left: 20px"><input id="engineCUDA" type="radio" name="engine" value="cuda" v-model="engine"> NVIDIA CUDA</label>
+                    <label for="engineOCL" style="margin-left: 20px"><input id="engineOCL" type="radio" name="engine" value="ocl" v-model="engine"> OpenCL (AMD + NVIDIA)</label>
+                </div>
+                <div class="form-group">
                     <label for="walletAddrInput">Payout Address</label>
                     <input class="form-control" :class="{ 'is-invalid' : walletAddrErr}" id="walletAddrInput" aria-describedby="walletAddrHelp" placeholder="0x..."
                         v-model.trim="walletAddr">
-                    <small id="walletAddrHelp" class="form-text text-muted">Please enter the Ethereum address where you
-                        would like to receive the earned MDSIMs. For security reasons, your earnings are tied to this address.</small>
+                    <small id="walletAddrHelp" class="form-text text-muted">Please enter the Ethereum address where you will transfer your earned MDSIMs to.
+                        For security reasons, your earnings are tied to this address. Change the address with an empty Neonious Node wallet only.</small>
                 </div>
                 <div class="form-group">
                     <label for="emailInput">E-Mail Address</label>
@@ -54,6 +59,7 @@
                 walletAddr: params.data.walletAddr ? params.data.walletAddr : '',
                 email: params.data.email ? params.data.email : '',
                 systemStart: params.data.systemStart !== undefined ? params.data.systemStart : true,
+                engine: params.data.engine,
                 walletAddrErr: false,
                 emailErr: false
             },
@@ -76,7 +82,8 @@
                         data: {
                             walletAddr: this.walletAddr,
                             systemStart: this.systemStart,
-                            email: this.email
+                            email: this.email,
+                            engine: this.engine
                         },
                         err
                     });

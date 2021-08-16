@@ -13,13 +13,14 @@ exports.init = async function(_uiMode, _server, _mine) {
     mine = _mine;
 
 	settingsPath = uiMode ? path.join(require('electron').app.getPath('userData'), 'settings.json') : path.join(__dirname, '../settings.json');
- //   try { await fs.promises.unlink(settingsPath); } catch(e) {}
+//    try { await fs.promises.unlink(settingsPath); } catch(e) {}
 
     try {
         exports.data = JSON.parse(await fs.promises.readFile(settingsPath, 'utf8'));
         server.settingsChanged(exports.data);
     } catch(e) {
-        exports.data = {nodeID: crypto.randomBytes(16).toString('hex').toUpperCase(), liveMode: true};
+        exports.data = {nodeID: crypto.randomBytes(16).toString('hex').toUpperCase(), 
+            liveMode: true, engine: 'ocl'};
 	    await fs.promises.writeFile(settingsPath, JSON.stringify(exports.data, null, 2));
     }
     mine.enable('CLIENT', exports.data.liveMode);

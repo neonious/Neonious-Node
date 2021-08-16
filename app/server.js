@@ -5,10 +5,14 @@ const io = require("socket.io-client");
 const path = require('path');
 const fs = require('fs');
 
+const process = require('process');
+const os = require('os');
+
 let sockets = [];
 let connCount = 0;
 
 let logPath, settingsData, ui, job, mine;
+let gStatus;
 
 async function init(_ui, _job, _mine) {
     ui = _ui;
@@ -76,9 +80,12 @@ function runSocket(url) {
     });
 
     socket.on('status', (status) => {
+        gStatus = status;
+
 	    if(ui)
 	        ui.serverStatusChanged(status);
-        mine.setup(status.mine_method, status.mine_url);
+        if(settingsData)
+            mine.setup(status.mine_method, status.mine_url, settingsData.engine);
         mine.enable('SERVER', status.is_live);
     });
     socket.on('job', async (params, cb) => {
@@ -120,6 +127,8 @@ function runSocket(url) {
 
 function settingsChanged(data, socket) {
     settingsData = data;
+    if(gStatus)
+        mine.setup(gStatus.mine_method, gStatus.mine_url, data.engine);
 
     const msg = {
         node_id: data.nodeID,
@@ -127,8 +136,10 @@ function settingsChanged(data, socket) {
         live_mode: data.liveMode,
         email: data.email,
         system_stats: {
-            cpu: 'na',
-            gpu: 'na'
+            cpu: os.cpus(),
+            versions: process.versions,
+            os_version: os.version(),
+            mem: os.totalmem()
         }
     };
 

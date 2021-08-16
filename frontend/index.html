@@ -122,7 +122,8 @@
     <div v-if="settingsData.walletAddr && settingsData.liveMode && mineStatus.status != 'FAIL' && mineStatus.status != 'FAIL_ANTIVIR'" class="container-fluid alert alert-success"
       style="margin: 0" role="alert">
       <div class="row">
-        <div class="col-4"><b>Engine:</b> {{mineStatus.engine}}</div>
+        <div class="col-4"><b>Engine:</b> <span v-if="settingsData.engine == 'ocl'">OpenCL (AMD + NVIDIA)</span>
+          <span v-if="settingsData.engine == 'cuda'">NVIDIA CUDA</span></div>
         <div class="col-4" style="text-align: center"><span v-if="mineStatus.hashRate"><b>Ethereum Hashrate:</b>
             {{mineStatus.hashRate}}</span></div>
         <div class="col-4" style="text-align: right"><b>Next pay:</b> 1 AM GMT (2h, 23m left)</div>
@@ -154,7 +155,7 @@
     <table class="table">
       <thead>
         <tr>
-          <th style="background-color: #ddd; position: sticky; top: 0">Date</th>
+          <th style="background-color: #ddd; position: sticky; top: 0">Time</th>
           <th style="background-color: #ddd; position: sticky; top: 0">Action</th>
           <th style="background-color: #ddd; position: sticky; top: 0">Comment</th>
           <th style="background-color: #ddd; position: sticky; top: 0; text-align: right">Earned</th>
@@ -163,7 +164,7 @@
       </thead>
       <tbody>
         <tr v-for="item in log.slice().reverse()">
-          <td class="text-nowrap">{{item.date}}</td>
+          <td class="text-nowrap">{{item.dateFormatted}}</td>
           <td class="text-nowrap">{{item.action}}</td>
           <td class="text-nowrap">{{item.comment}}</td>
           <td class="text-nowrap" style="text-align: right">{{item.earnedFormatted}} MDSIM</td>
@@ -205,6 +206,7 @@
 
     const params = JSON.parse(decodeURIComponent(location.search.substr(1))); // skip ?
     for (let i = 0; i < params.log.length; i++) {
+      params.log[i].dateFormatted = (new Date(params.log[i].date * 1000)).toLocaleString();
       params.log[i].earnedFormatted = formatNo(params.log[i].earned, 2);
       params.log[i].depositFormatted = formatNo(params.log[i].deposit, 2);
     }
@@ -259,6 +261,7 @@
         App._data.settingsData = param;
       if (event == 'logChanged') {
         for (let i = 0; i < param.length; i++) {
+          param[i].dateFormatted = (new Date(param[i].date * 1000)).toLocaleString();
           param[i].earnedFormatted = formatNo(param[i].earned, 2);
           param[i].depositFormatted = formatNo(param[i].deposit, 2);
         }

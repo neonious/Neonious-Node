@@ -19,8 +19,10 @@
         <div style="padding: 20px">
             <h3 style="margin-bottom: 20px"><img src="info.svg" width="40" height="40" style="vertical-align: -9px"> Wallet transfer information</h3>
             <p><b><u>How to retrieve the funds in your wallet</u></b><br>
-                You can initate a transfer of the funds in the wallet to your payout address here: <button :disabled="!!serverStatus.pay_out_pending" @click="payOut" class="btn btn-primary" style="margin-left: 5px">Initiate Pay Out</button> <span v-if="serverStatus.pay_out_pending" style="color: darkgreen; margin-left: 10px">Initiated...</span> <br>
-                <small>Minimum amount to pay out: 2,000 MDSIMs, pay out wait period: 72 hours.
+                You can initate a transfer of the funds in the wallet to your payout address here.<br>
+                Amount: <input type="text" style="display: inline-block; background-color: white; width: 120px; text-align: right" :disabled="!!serverStatus.pay_out_pending" class="form-control" v-model.trim="payoutAmount"> MDSIM
+                <button :disabled="!!serverStatus.pay_out_pending" @click="payOut" class="btn btn-primary" style="margin-left: 15px">Initiate Pay Out</button> <span v-if="serverStatus.pay_out_pending" style="color: darkgreen; margin-left: 10px">Initiated...</span> <br>
+                <small>Minimum amount to pay out: {{minPayoutFormatted}} MDSIMs, pay out wait period: {{serverStatus.payoutHours}} hours.
                 The Ethereum network fee for the transfer is subtracted from the pay out. We do not add fees from our side.</small></p>
             <p><b><u>How to add funds to your wallet</u></b><br>Swap ETH or tokens for MDSIMs on the <a @click="openTokenSale" style="text-decoration: underline" href="https://www.neonious.org/en/TradeMDSIM" target="_blank">MDSIM trading page</a>, then transfer the MDSIMs to the following Ethereum address:<br><input class="form-control" style="display: inline-block; background-color: white; width: 420px" readonly v-model="serverStatus.deposit_address"> <button @click="copyAddress" class="btn btn-primary">Copy Address</button><br>
                 <small>The minute the funds arrive, the deposit shown in our software will be updated.</small></p>
@@ -84,7 +86,9 @@ Next to simple cryptocurrency mining,
         const App = new Vue({
             el: '#app',
             data: {
-                serverStatus: params.serverStatus
+                serverStatus: params.serverStatus,
+                minPayoutFormatted: formatNo(params.serverStatus.minPayout),
+                payoutAmount: ''
             },
             methods: {
                 close: () => {
@@ -119,8 +123,10 @@ Next to simple cryptocurrency mining,
         });
 
         window.onBackend((event, param) => {
-            if(event == 'serverStatusChanged')
+            if(event == 'serverStatusChanged') {
                 App._data.serverStatus = param;
+                App._data.minPayoutFormatted = formatNo(param.minPayout);
+            }
         });
     </script>
 </body>
