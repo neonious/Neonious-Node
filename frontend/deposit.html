@@ -20,8 +20,8 @@
             <h3 style="margin-bottom: 20px"><img src="info.svg" width="40" height="40" style="vertical-align: -9px"> Wallet transfer information</h3>
             <p><b><u>How to retrieve the funds in your wallet</u></b><br>
                 You can initate a transfer of the funds in the wallet to your payout address here.<br>
-                Amount: <input type="text" style="display: inline-block; background-color: white; width: 120px; text-align: right" :disabled="!!serverStatus.pay_out_pending" class="form-control" v-model.trim="payoutAmount"> MDSIM
-                <button :disabled="!!serverStatus.pay_out_pending" @click="payOut" class="btn btn-primary" style="margin-left: 15px">Initiate Pay Out</button> <span v-if="serverStatus.pay_out_pending" style="color: darkgreen; margin-left: 10px">Initiated...</span> <br>
+                Amount: <input type="text" style="display: inline-block; background-color: white; width: 120px; text-align: right" class="form-control" v-model.trim="payoutAmount"> MDSIM
+                <button @click="payOut" class="btn btn-primary" style="margin-left: 15px">Initiate Pay Out</button> <span v-if="serverStatus.pay_out_pending_at" style="color: darkgreen; margin-left: 10px">Initiated... Payment will arrive at the end of the wait period noted below.</span> <br>
                 <small>Minimum amount to pay out: {{minPayoutFormatted}} MDSIMs, pay out wait period: {{serverStatus.payoutHours}} hours.
                 The Ethereum network fee for the transfer is subtracted from the pay out. We do not add fees from our side.</small></p>
             <p><b><u>How to add funds to your wallet</u></b><br>Swap ETH or tokens for MDSIMs on the <a @click="openTokenSale" style="text-decoration: underline" href="https://www.neonious.org/en/TradeMDSIM" target="_blank">MDSIM trading page</a>, then transfer the MDSIMs to the following Ethereum address:<br><input class="form-control" style="display: inline-block; background-color: white; width: 420px" readonly v-model="serverStatus.deposit_address"> <button @click="copyAddress" class="btn btn-primary">Copy Address</button><br>
@@ -99,13 +99,19 @@ Next to simple cryptocurrency mining,
                     window.sendBackend('openTokenSale');
                 },
                 payOut: function() {
-                    if(!this.serverStatus.deposit)
-                        alert("You have no MDSIMs deposited which can be paid out.");
-                    else if(this.serverStatus.deposit < this.serverStatus.deposit_min_payout)
+                    let amount = this.payoutAmount | 0;
+                    if(amount + '' !== this.payoutAmount || amount <= 0)
+                        alert('Please enter a integer larger than 0, without . and ,');
+                    else if(amount > this.serverStatus.deposit)
                         alert("You have " + formatNo(this.serverStatus.deposit, 2) + " MDSIM, which is less than the "
-                         + formatNo(this.serverStatus.deposit_min_payout, 2) + " MDSIM needed to request a payout.");
-                    else if(confirm("The Ethereum network fee for the transfer will be subtracted from the deposit on payout and swapping for ETH or stablecoin will also cost additional fees.\n\nOn the other side, we believe it to be a good strategy to hold the MDSIMs as they will rise in value on the long term because Neonious Biotech will be awarded more drug discovery and analysis contracts over time which will be processed with MDSIMs.\n\nAre you sure you wish to dissolve your deposit?"))
-                        window.sendBackend('depositPayOut');
+                         + formatNo(amount, 2) + " MDSIM you are requesting to pay out.");
+                    else if(amount < this.serverStatus.minPayout)
+                        alert("The " + formatNo(amount, 2) + " MDSIM, which you are requesting to pay out is less than the minimum of "
+                        + formatNo(this.serverStatus.minPayout, 2) + " MDSIM.");
+                    else if(confirm("The Ethereum network fee for the transfer will be subtracted from the deposit on payout and swapping for ETH or stablecoin will also cost additional fees.\n\nOn the other side, we believe it to be a good strategy to hold the MDSIMs as they will rise in value on the long term because Neonious Biotech will be awarded more drug discovery and analysis contracts over time which will be processed with MDSIMs.\n\nAre you sure you wish to dissolve your deposit?")) {
+                        window.sendBackend('depositPayOut', amount);
+                        this.payoutAmount = '';
+                    }
                 },
                 copyAddress: function() {
                     window.sendBackend('copyDepositAddress');

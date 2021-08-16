@@ -101,10 +101,12 @@
           <div v-if="!settingsData.walletAddr">
             <div class="led-red"></div> Need settings set to activate node
           </div>
-          <div v-if="settingsData.walletAddr && settingsData.liveMode && (mineStatus.status == 'FAIL' || mineStatus.status == 'FAIL_ANTIVIR')">
+          <div
+            v-if="settingsData.walletAddr && settingsData.liveMode && (mineStatus.status == 'FAIL' || mineStatus.status == 'FAIL_ANTIVIR')">
             <div class="led-red"></div> Error running node
           </div>
-          <div v-if="settingsData.walletAddr && settingsData.liveMode && mineStatus.status != 'FAIL'  && mineStatus.status != 'FAIL_ANTIVIR'">
+          <div
+            v-if="settingsData.walletAddr && settingsData.liveMode && mineStatus.status != 'FAIL'  && mineStatus.status != 'FAIL_ANTIVIR'">
             <div v-if="!serverStatus.is_live && serverStatus.status_msg" class="led-red"></div>
             <div v-if="serverStatus.is_live || !serverStatus.status_msg" class="led-green"></div>
             <span v-if="serverStatus.status_msg">{{serverStatus.status_msg}}</span>
@@ -119,35 +121,44 @@
         </div>
       </div>
     </div>
-    <div v-if="settingsData.walletAddr && settingsData.liveMode && mineStatus.status != 'FAIL' && mineStatus.status != 'FAIL_ANTIVIR'" class="container-fluid alert alert-success"
-      style="margin: 0" role="alert">
+    <div
+      v-if="settingsData.walletAddr && settingsData.liveMode && mineStatus.status != 'FAIL' && mineStatus.status != 'FAIL_ANTIVIR'"
+      class="container-fluid alert alert-success" style="margin: 0" role="alert">
       <div class="row">
         <div class="col-4"><b>Engine:</b> <span v-if="settingsData.engine == 'ocl'">OpenCL (AMD + NVIDIA)</span>
-          <span v-if="settingsData.engine == 'cuda'">NVIDIA CUDA</span></div>
+          <span v-if="settingsData.engine == 'cuda'">NVIDIA CUDA</span>
+        </div>
         <div class="col-4" style="text-align: center"><span v-if="mineStatus.hashRate"><b>Ethereum Hashrate:</b>
             {{mineStatus.hashRate}}</span></div>
-        <div class="col-4" style="text-align: right"><b>Next pay:</b> 1 AM GMT (2h, 23m left)</div>
+        <div class="col-4" style="text-align: right"><b>Next pay:</b> {{nextEarned}}</div>
       </div>
     </div>
-    <div v-if="settingsData.walletAddr && settingsData.liveMode && mineStatus.status == 'FAIL'" class="container-fluid alert alert-danger"
-      style="margin: 0" role="alert">
+    <div v-if="settingsData.walletAddr && settingsData.liveMode && mineStatus.status == 'FAIL'"
+      class="container-fluid alert alert-danger" style="margin: 0" role="alert">
       <div class="row">
         <div class="col-2"><b>Engine:</b> {{mineStatus.engine}}</div>
-        <div class="col-10">Failed to activate node. Please make sure that you have GPUs which support the engine used (see left), that all GPUs have at least 8 GB of RAM and that all required software is installed (CUDA Toolkit v11.2 / OpenCL driver).</div>
+        <div class="col-10">Failed to activate node. Please make sure that you have GPUs which support the engine used
+          (see left), that all GPUs have at least 8 GB of RAM and that all required software is installed (CUDA Toolkit
+          v11.2 / OpenCL driver).</div>
       </div>
     </div>
-    <div v-if="settingsData.walletAddr && settingsData.liveMode && mineStatus.status == 'FAIL_ANTIVIR'" class="container-fluid alert alert-danger"
-      style="margin: 0" role="alert">
+    <div v-if="settingsData.walletAddr && settingsData.liveMode && mineStatus.status == 'FAIL_ANTIVIR'"
+      class="container-fluid alert alert-danger" style="margin: 0" role="alert">
       <div class="row">
         <div class="col-2"><b>Engine:</b> {{mineStatus.engine}}</div>
-        <div class="col-10">Failed to activate node. Either you do not have the needed software installed (CUDA Toolkit v11.2 / OpenCL driver), or your antivirus software (additionally installed or Windows Defender) deleted/blocked our engine executables. In this case, selectivly disable your antivirus software and reinstall Neonious Node.  <a @click="openErrorFailAntivir" style="text-decoration: underline" href="https://www.neonious.org/en/RunNode#AntiVirus" target="_blank">More Info</a></div>
+        <div class="col-10">Failed to activate node. Either you do not have the needed software installed (CUDA Toolkit
+          v11.2 / OpenCL driver), or your antivirus software (additionally installed or Windows Defender)
+          deleted/blocked our engine executables. In this case, selectivly disable your antivirus software and reinstall
+          Neonious Node. <a @click="openErrorFailAntivir" style="text-decoration: underline"
+            href="https://www.neonious.org/en/RunNode#AntiVirus" target="_blank">More Info</a></div>
       </div>
     </div>
     <div v-if="!settingsData.walletAddr" class="alert alert-primary" style="margin: 0" role="alert">Welcome to our
       software Neonious Node. As a first step, please give us the needed information to start.
       <button class="btn btn-primary" style="margin-left: 10px" @click="openSettings">Open Settings</button>
     </div>
-    <div v-if="settingsData.walletAddr && !deposit && !settingsData.hideDeposit" class="alert alert-primary" style="margin: 0" role="alert">You have
+    <div v-if="settingsData.walletAddr && !deposit && !settingsData.hideDeposit" class="alert alert-primary"
+      style="margin: 0" role="alert">You have
       no MDSIMs in your wallet. Consider transfering MDSIMs to your wallet to receive higher paid work.
       <button class="btn btn-primary" style="margin-left: 10px" @click="openDeposit">Explain More</button>
       <button class="btn btn-secondary" style="margin-left: 10px" @click="hideDeposit">Hide Message</button>
@@ -205,10 +216,49 @@
     }
 
     const params = JSON.parse(decodeURIComponent(location.search.substr(1))); // skip ?
+    let dateNow = new Date();
+    let lastToday = true;
     for (let i = 0; i < params.log.length; i++) {
-      params.log[i].dateFormatted = (new Date(params.log[i].date * 1000)).toLocaleString();
+      let date = new Date(params.log[i].date * 1000);
+      params.log[i].dateFormatted = date.toLocaleString();
       params.log[i].earnedFormatted = formatNo(params.log[i].earned, 2);
       params.log[i].depositFormatted = formatNo(params.log[i].deposit, 2);
+      if (params.log[i].type == 0)
+        lastToday = date.getUTCDate() == dateNow.getUTCDate();
+    }
+    let tsNext;
+    if (lastToday || dateNow.getUTCHours() >= 1)
+      dateNow.setUTCDate(dateNow.getUTCDate() + 1);
+    dateNow.setUTCHours(0);
+    dateNow.setUTCMinutes(10);
+    dateNow.setUTCSeconds(0);
+    tsNext = (dateNow.getTime() * 0.001) | 0;
+
+    function getNextEarned() {
+      let secs = tsNext - ((new Date().getTime() * 0.001) | 0);
+      if (secs <= 0)
+        return "any time now";
+
+      let txt = '';
+      if (secs >= 3600) {
+        let hours = (secs / 3600) | 0;
+        secs -= hours * 3600;
+        txt = hours + (hours == 1 ? ' hour' : ' hours');
+      }
+      if (secs >= 60) {
+        let min = (secs / 60) | 0;
+        secs -= min * 60;
+        if (txt)
+          txt += ', ';
+        txt += min + (min == 1 ? ' min' : ' mins');
+      }
+      if (secs) {
+        if (txt)
+          txt += ', ';
+        txt += secs + (secs == 1 ? ' sec' : ' secs');
+      }
+
+      return "in " + txt;
     }
 
     Vue.use(BootstrapVue);
@@ -222,7 +272,8 @@
         deposit: params.log.length ? params.log[params.log.length - 1].deposit : 0,
         depositUSDFormatted: params.serverStatus.rate_usd === undefined ? undefined : formatNo((params.log.length ? params.log[params.log.length - 1].deposit : 0) * params.serverStatus.rate_usd, 2),
         depositFormatted: params.log.length ? params.log[params.log.length - 1].depositFormatted : '0.00',
-        mineStatus: params.mineStatus
+        mineStatus: params.mineStatus,
+        nextEarned: getNextEarned()
       },
       watch: {
         settingsLiveMode: function (val) {
@@ -240,7 +291,7 @@
           e.preventDefault();
           sendBackend('openErrorFailAntivir');
         },
-        hideDeposit: function() {
+        hideDeposit: function () {
           alert("We will hide this message now.\n\nIn the future, to access your wallet's deposit or withdrawal instructions, please go to the File menu.")
 
           this.settingsData.hideDeposit = true;
@@ -256,15 +307,31 @@
       }
     });
 
+    setInterval(() => {
+      App._data.nextEarned = getNextEarned();
+    }, 3300);
     window.onBackend((event, param) => {
       if (event == 'settingsSet')
         App._data.settingsData = param;
       if (event == 'logChanged') {
+        let dateNow = new Date();
+        let lastToday = true;
         for (let i = 0; i < param.length; i++) {
-          param[i].dateFormatted = (new Date(param[i].date * 1000)).toLocaleString();
+          let date = new Date(param[i].date * 1000);
+          param[i].dateFormatted = date.toLocaleString();
           param[i].earnedFormatted = formatNo(param[i].earned, 2);
           param[i].depositFormatted = formatNo(param[i].deposit, 2);
+          if (param[i].type == 0)
+            lastToday = date.getUTCDate() == dateNow.getUTCDate();
         }
+        if (lastToday || dateNow.getUTCHours() >= 1)
+          dateNow.setUTCDate(dateNow.getUTCDate() + 1);
+        dateNow.setUTCHours(0);
+        dateNow.setUTCMinutes(10);
+        dateNow.setUTCSeconds(0);
+        tsNext = (dateNow.getTime() * 0.001) | 0;
+
+        App._data.nextEarned = getNextEarned();
         App._data.log = param;
         App._data.deposit = param.length ? param[param.length - 1].deposit : 0;
         App._data.depositUSDFormatted = App._data.serverStatus.rate_usd === undefined ? undefined : formatNo((param.length ? param[param.length - 1].deposit : 0) * App._data.serverStatus.rate_usd, 2),

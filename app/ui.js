@@ -150,7 +150,7 @@ ipcMain.on('onFrontend', async (e, event, param) => {
     }
     
     if(event == 'depositPayOut') {
-        server.emitAll('deposit_pay_out');
+        server.emitAll('deposit_pay_out', param);
     }
     if(event == 'copyDepositAddress') {
         clipboard.writeText(serverStatus.deposit_address);
