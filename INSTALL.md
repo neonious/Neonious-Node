@@ -12,8 +12,7 @@
 	cd ..
 
 	(only on Windows)
-	copy https://www.neonious.org/static/neonious-node-engine-cuda-1.0.0-win.zip
-	or copy https://www.neonious.org/static/neonious-node-engine-opencl-1.0.0-win.zip
+	copy https://www.neonious.org/static/neonious-node-engine-1.0.0-win.zip
 	to engine
 
 ## Run development version:
@@ -33,7 +32,7 @@ Thus, please use the officially packed releases.
 
 This part is very much manual work. Not automized well.
 
-Instead, consider using the packages
+Instead, consider using the package
 https://www.neonious.org/static/neonious-node-engine-1.0.0-win.zip
 
 Goal: Create executables which run on any system with Cuda 11.2
@@ -63,7 +62,7 @@ then add static and static-libstdc++in Makefile
 
 	make
 
-Copy executable into engine directory
+Copy executable into engine directory (with correct file name, see engine package for reference)
 
 
 ## Compile AutoDock-GPU
@@ -74,7 +73,7 @@ You need to rename deps/AutoDock-GPU/host/inc/performdocking.h.Cuda
 or deps/AutoDock-GPU/host/inc/performdocking.h.OpenCL to
 deps/AutoDock-GPU/host/inc/performdocking.h
 
-Copy executable into engine directory
+Copy executable into engine directory (with correct file name, see engine package for reference)
 
 
 ## Compile Gromacs
@@ -122,6 +121,8 @@ cmake --install .
 copy mkl redist + intel compiler redist + vcruntime140.dll + vcomp140.dll into engine/gromacs/bin
 These libraries may all be redistributed.
 
+Rename executable correctly, see engine package for reference.
+
 
 ## Compile ethminer
 
@@ -133,7 +134,7 @@ Otherwise CMake will bail out at OpenSSL
 OpenCL.lib must be taken from non-Hunter, because the Hunter version does not work
 
 On Windows we also do the following, to potentially get around not so intelligent AntiVirus software:
-Renamed executable from ethminer to neonmine
+Renamed executable from ethminer to neonmine_ocl / neonmine_cuda
 Renamed mentions of ethminer to neonmine in ethminer-buildinfo project
 Removed ethminer.rc (icon)
 
