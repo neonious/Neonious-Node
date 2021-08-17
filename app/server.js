@@ -102,7 +102,7 @@ function runSocket(url) {
         module.exports.log = log;
     	if(ui)
 	        ui.logChanged();
-        await util.writeFile(logPath, JSON.stringify(module.exports.log, null, 2));
+        util.writeFile(logPath, JSON.stringify(module.exports.log, null, 2));
     });
 }
 

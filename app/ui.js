@@ -71,7 +71,7 @@ ipcMain.on('onFrontend', async (e, event, param) => {
         sendFrontend('settingsSet', settings.data);
     }
     if(event == 'openErrorFailAntivir')
-        shell.openExternal('https://www.neonious.org/en/RunNode#AntiVirus');
+        shell.openExternal('https://www.neonious.org/en/AntiVirusInfo');
 
     if(event == 'abortSim')
         job.abort();

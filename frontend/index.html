@@ -150,7 +150,7 @@
           v11.2 / OpenCL driver), or your antivirus software (additionally installed or Windows Defender)
           deleted/blocked our engine executables. In this case, selectivly disable your antivirus software and reinstall
           Neonious Node. <a @click="openErrorFailAntivir" style="text-decoration: underline"
-            href="https://www.neonious.org/en/RunNode#AntiVirus" target="_blank">More Info</a></div>
+            href="https://www.neonious.org/en/AntiVirusInfo" target="_blank">More Info</a></div>
       </div>
     </div>
     <div v-if="!settingsData.walletAddr" class="alert alert-primary" style="margin: 0" role="alert">Welcome to our
@@ -174,6 +174,9 @@
         </tr>
       </thead>
       <tbody>
+        <tr v-if="log.length == 0">
+          <td colspan="5"><i>You have not earned any MDSIM yet.</i></td>
+        </tr>
         <tr v-for="item in log.slice().reverse()">
           <td class="text-nowrap">{{item.dateFormatted}}</td>
           <td class="text-nowrap">{{item.action}}</td>
