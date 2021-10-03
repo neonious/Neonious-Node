@@ -31,6 +31,12 @@
                         For security reasons, your earnings are tied to this address. Change the address with an empty Neonious Node wallet only.</small>
                 </div>
                 <div class="form-group">
+                    <label for="nodeTitleInput">Node Title</label>
+                    <input class="form-control" :class="{ 'is-invalid' : nodeTitleErr}" id="nodeTitleInput" aria-describedby="nodeTitleHelp"
+                        placeholder="" v-model.trim="nodeTitle">
+                    <small id="nodeTitleHelp" class="form-text text-muted">Optionally enter a title for your node to be able to identify the node in correspondence with Neonious.</small>
+                </div>
+                <div class="form-group">
                     <label for="emailInput">E-Mail Address</label>
                     <input class="form-control" :class="{ 'is-invalid' : emailErr}" id="emailInput" aria-describedby="emailHelp"
                         placeholder="" v-model.trim="email">
@@ -58,10 +64,12 @@
             data: {
                 walletAddr: params.data.walletAddr ? params.data.walletAddr : '',
                 email: params.data.email ? params.data.email : '',
+                nodeTitle: params.data.nodeTitle ? params.data.nodeTitle : '',
                 systemStart: params.data.systemStart !== undefined ? params.data.systemStart : true,
                 engine: params.data.engine,
                 walletAddrErr: false,
-                emailErr: false
+                emailErr: false,
+                nodeTitleErr: false
             },
             methods: {
                 settingsClose: () => {
@@ -83,6 +91,7 @@
                             walletAddr: this.walletAddr,
                             systemStart: this.systemStart,
                             email: this.email,
+                            nodeTitle: this.nodeTitle,
                             engine: this.engine
                         },
                         err

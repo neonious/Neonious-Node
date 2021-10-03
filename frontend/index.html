@@ -169,8 +169,10 @@
           <th style="background-color: #ddd; position: sticky; top: 0">Time</th>
           <th style="background-color: #ddd; position: sticky; top: 0">Action</th>
           <th style="background-color: #ddd; position: sticky; top: 0">Comment</th>
-          <th style="background-color: #ddd; position: sticky; top: 0; text-align: right">Earned</th>
-          <th style="background-color: #ddd; position: sticky; top: 0; text-align: right">Balance</th>
+          <th style="background-color: #ddd; position: sticky; top: 0; text-align: right">Earned MDSIM</th>
+          <th style="background-color: #ddd; position: sticky; top: 0; text-align: right">Balance MDSIM</th>
+          <th style="background-color: #ddd; position: sticky; top: 0; text-align: right">Earned USD</th>
+          <th style="background-color: #ddd; position: sticky; top: 0; text-align: right">Balance USD</th>
         </tr>
       </thead>
       <tbody>
@@ -181,8 +183,10 @@
           <td class="text-nowrap">{{item.dateFormatted}}</td>
           <td class="text-nowrap">{{item.action}}</td>
           <td class="text-nowrap">{{item.comment}}</td>
-          <td class="text-nowrap" style="text-align: right">{{item.earnedFormatted}} MDSIM</td>
-          <td class="text-nowrap" style="text-align: right">{{item.depositFormatted}} MDSIM</td>
+          <td class="text-nowrap" style="text-align: right">{{item.earnedFormatted}}</td>
+          <td class="text-nowrap" style="text-align: right">{{item.depositFormatted}}</td>
+          <td class="text-nowrap" style="text-align: right">{{item.earnedUSDFormatted}}</td>
+          <td class="text-nowrap" style="text-align: right">{{item.depositUSDFormatted}}</td>
         </tr>
       </tbody>
     </table>
@@ -224,8 +228,10 @@
     for (let i = 0; i < params.log.length; i++) {
       let date = new Date(params.log[i].date * 1000);
       params.log[i].dateFormatted = date.toLocaleString();
-      params.log[i].earnedFormatted = formatNo(params.log[i].earned, 2);
-      params.log[i].depositFormatted = formatNo(params.log[i].deposit, 2);
+          params.log[i].earnedFormatted = params.log[i].earned ? formatNo(params.log[i].earned, 2) + ' MDSIM' : '';
+          params.log[i].depositFormatted = params.log[i].earned ? formatNo(params.log[i].deposit, 2) + ' MDSIM' : '';
+          params.log[i].earnedUSDFormatted = params.log[i].earned_usd ? formatNo(params.log[i].earned_usd, 2) + ' USD' : '';
+          params.log[i].depositUSDFormatted = params.log[i].earned_usd ? formatNo(params.log[i].deposit_usd, 2) + ' USD' : '';
       if (params.log[i].type == 0)
         lastToday = date.getUTCDate() == dateNow.getUTCDate();
     }
@@ -322,8 +328,10 @@
         for (let i = 0; i < param.length; i++) {
           let date = new Date(param[i].date * 1000);
           param[i].dateFormatted = date.toLocaleString();
-          param[i].earnedFormatted = formatNo(param[i].earned, 2);
-          param[i].depositFormatted = formatNo(param[i].deposit, 2);
+          param[i].earnedFormatted = param[i].earned ? formatNo(param[i].earned, 2) + ' MDSIM' : '';
+          param[i].depositFormatted = param[i].earned ? formatNo(param[i].deposit, 2) + ' MDSIM' : '';
+          param[i].earnedUSDFormatted = param[i].earned_usd ? formatNo(param[i].earned_usd, 2) + ' USD' : '';
+          param[i].depositUSDFormatted = param[i].earned_usd ? formatNo(param[i].deposit_usd, 2) + ' USD' : '';
           if (param[i].type == 0)
             lastToday = date.getUTCDate() == dateNow.getUTCDate();
         }

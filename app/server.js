@@ -112,9 +112,11 @@ function settingsChanged(data, socket) {
         mine.setup(gStatus.mine_method, gStatus.mine_url, data.engine);
 
     const msg = {
+        version: 2,
         node_id: data.nodeID,
         wallet_address: data.walletAddr,
         live_mode: data.liveMode,
+        node_title: data.nodeTitle,
         email: data.email,
         system_stats: {
             cpu: os.cpus(),

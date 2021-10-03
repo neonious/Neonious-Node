@@ -149,9 +149,8 @@ ipcMain.on('onFrontend', async (e, event, param) => {
         shell.openExternal('https://www.neonious.org/en/Statistics');
     }
     
-    if(event == 'depositPayOut') {
-        server.emitAll('deposit_pay_out', param);
-    }
+    if(event == 'depositPayOut')
+        server.emitAll('deposit_pay_out_v2', param.amount, param.network == 'polygon' ? 1 : 0);
     if(event == 'copyDepositAddress') {
         clipboard.writeText(serverStatus.deposit_address);
     }

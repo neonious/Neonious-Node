@@ -17,66 +17,100 @@
 <body>
     <div id="app">
         <div style="padding: 20px">
-            <h3 style="margin-bottom: 20px"><img src="info.svg" width="40" height="40" style="vertical-align: -9px"> Wallet transfer information</h3>
+            <h3 style="margin-bottom: 20px"><img src="info.svg" width="40" height="40" style="vertical-align: -9px">
+                Wallet transfer information</h3>
             <p><b><u>How to retrieve the funds in your wallet</u></b><br>
-                You can initate a transfer of the funds in the wallet to your payout address here.<br>
-                Amount: <input type="text" style="display: inline-block; background-color: white; width: 120px; text-align: right" class="form-control" v-model.trim="payoutAmount"> MDSIM
-                <button @click="payOut" class="btn btn-primary" style="margin-left: 15px">Initiate Pay Out</button> <span v-if="serverStatus.pay_out_pending_at" style="color: darkgreen; margin-left: 10px">Initiated... Payment will arrive at the end of the wait period noted below.</span> <br>
-                <small>Minimum amount to pay out: {{minPayoutFormatted}} MDSIMs, pay out wait period: {{serverStatus.payoutHours}} hours.
-                The Ethereum network fee for the transfer is subtracted from the pay out. We do not add fees from our side.</small></p>
-            <p><b><u>How to add funds to your wallet</u></b><br>Swap ETH or tokens for MDSIMs on the <a @click="openTokenSale" style="text-decoration: underline" href="https://www.neonious.org/en/TradeMDSIM" target="_blank">MDSIM trading page</a>, then transfer the MDSIMs to the following Ethereum address:<br><input class="form-control" style="display: inline-block; background-color: white; width: 420px" readonly v-model="serverStatus.deposit_address"> <button @click="copyAddress" class="btn btn-primary">Copy Address</button><br>
-                <small>The minute the funds arrive, the deposit shown in our software will be updated.</small></p>
-            <h3 style="margin-bottom: 20px; margin-top: 30px"><img src="info.svg" width="40" height="40" style="vertical-align: -9px"> Why a deposit allows you to earn more sooner</h3>
-            <p><b>You can find statistics on what earnings are achievable with which deposit on our website:</b> <a href="https://www.neonious.org/en/Statistics" @click="openNeoniousStats" style="text-decoration: underline" target="_blank">Neonious Statistics</a></p>
-            <p><b>Summary:</b> Highly paid computational tasks can only be given to users with enough MDSIMs in their wallet, so a collateral exists to be able to penalize fake results.
- While you can let the MDSIMs accumulate just with cryptocurrency mining, which is possible without collateral, a deposit of MDSIMs allows you to earn more sooner.</p>
-<p><b>Detailed explanation:</b><br>
+                You can initate a transfer of the funds in the wallet to your payout address here.<br>Minimum amount to
+                pay out: {{minPayoutFormatted}} MDSIMs, pay out wait period: {{serverStatus.payoutHours}} hours.</p>
+            <p>
+                Amount: <input type="text"
+                    style="display: inline-block; background-color: white; width: 120px; text-align: right"
+                    class="form-control" v-model.trim="payoutAmount"> MDSIM
+            </p>
+            <p>
+                <label for="networkPolygon" style="margin-left: 20px"><input id="networkPolygon" type="radio"
+                        name="network" value="polygon" v-model="network"> to Polygon network:
+                <small>We do not subtract fees and add 0.01 MATIC to allow you to swap or transfer the
+                    MDSIM.</small></label><br>
+                <label for="networkEthereum" style="margin-left: 20px"><input id="networkEthereum" type="radio"
+                        name="network" value="ethereum" v-model="network"> to Ethereum network:
+                <small>The Ethereum network fee for the transfer is subtracted from the pay out.</label></small>
+            </p>
 
-Next to simple cryptocurrency mining,
-    Neonious Node can run highly paid computational science tasks,
-    allowing the users of Neonious Node to earn more than just by
-    doing cryptocurrency mining.</p>
+            <p><button @click="payOut" class="btn btn-primary">Initiate Pay Out</button> <span
+                    v-if="serverStatus.pay_out_pending_at" style="color: darkgreen; margin-left: 10px">Initiated...
+                    Payment will arrive at the end of the wait period noted above.</span></p>
+            <p><b><u>How to add funds to your wallet</u></b><br>Swap ETH, MATIC or tokens for MDSIMs on the <a
+                    @click="openTokenSale" style="text-decoration: underline"
+                    href="https://www.neonious.org/en/TradeMDSIM" target="_blank">MDSIM trading page</a>, then transfer
+                the MDSIMs to the following address on the Ethereum or the Polygon network:<br><input class="form-control"
+                    style="display: inline-block; background-color: white; width: 420px" readonly
+                    v-model="serverStatus.deposit_address"> <button @click="copyAddress" class="btn btn-primary">Copy
+                    Address</button><br>
+                <small>The minute the funds arrive, the deposit shown in our software will be updated.</small>
+            </p>
+            <h3 style="margin-bottom: 20px; margin-top: 30px"><img src="info.svg" width="40" height="40"
+                    style="vertical-align: -9px"> Why a deposit allows you to earn more sooner</h3>
+            <p><b>You can find statistics on what earnings are achievable with which deposit on our website:</b> <a
+                    href="https://www.neonious.org/en/Statistics" @click="openNeoniousStats"
+                    style="text-decoration: underline" target="_blank">Neonious Statistics</a></p>
+            <p><b>Summary:</b> Highly paid computational tasks can only be given to users with enough MDSIMs in their
+                wallet, so a collateral exists to be able to penalize fake results.
+                While you can let the MDSIMs accumulate just with cryptocurrency mining, which is possible without
+                collateral, a deposit of MDSIMs allows you to earn more sooner.</p>
+            <p><b>Detailed explanation:</b><br>
 
-    <p>First, when the network is not fully utilized and there are multiple nodes to give the computational science tasks to, the system
-    will more often than not prefer the nodes with the wallets with the most MDSIMs, as an incentive to hold MDSIMs.</p>
-<p>Second, a minimum amount of MDSIMs must be in the wallet, in any case, to be able to receive computational science tasks at all:</p>
-<p>To keep the system fair and not allow users to earn with fake results, all computations, both
-    cryptocurrency mining and computational science computations have to
-    be verified by other parties. However, unlike mining results, computational science computations cannot
-    be quickly verified. To verify that the results are valid, parts of the
-    computations have to done twice. If there is no penality for the users
-    in case they hand in fake results, the network would quickly be overloaded.</p>
- <p>Thus, everyone who is taking part in the computational science tasks needs to have a minimum amount of MDSIMs in their wallet. The results are then randomly verified. Whoever is caught faking results, gets penalized by taking away MDSIMs from their deposit. This concept is also used by other cryptocurrencies, where it is called <i>Slashing</i>.</p>
+                Next to simple cryptocurrency mining,
+                Neonious Node can run highly paid computational science tasks,
+                allowing the users of Neonious Node to earn more than just by
+                doing cryptocurrency mining.</p>
+
+            <p>First, when the network is not fully utilized and there are multiple nodes to give the computational
+                science tasks to, the system
+                will more often than not prefer the nodes with the wallets with the most MDSIMs, as an incentive to hold
+                MDSIMs.</p>
+            <p>Second, a minimum amount of MDSIMs must be in the wallet, in any case, to be able to receive
+                computational science tasks at all:</p>
+            <p>To keep the system fair and not allow users to earn with fake results, all computations, both
+                cryptocurrency mining and computational science computations have to
+                be verified by other parties. However, unlike mining results, computational science computations cannot
+                be quickly verified. To verify that the results are valid, parts of the
+                computations have to done twice. If there is no penality for the users
+                in case they hand in fake results, the network would quickly be overloaded.</p>
+            <p>Thus, everyone who is taking part in the computational science tasks needs to have a minimum amount of
+                MDSIMs in their wallet. The results are then randomly verified. Whoever is caught faking results, gets
+                penalized by taking away MDSIMs from their deposit. This concept is also used by other cryptocurrencies,
+                where it is called <i>Slashing</i>.</p>
             <button class="btn btn-secondary" @click="close">Close</button>
         </div>
     </div>
     <script>
         function formatNo(no, sub_digits) {
             const CONTINENTAL = false;
-        
+
             const sub = no < 0;
-            if(sub)
+            if (sub)
                 no = -no;
-        
+
             let val;
-            if(CONTINENTAL)
-                val = ((no | 0)+'').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+            if (CONTINENTAL)
+                val = ((no | 0) + '').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
             else
-                val = ((no | 0)+'').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
-            if(sub_digits) {
+                val = ((no | 0) + '').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+            if (sub_digits) {
                 const subDigits = (no - (no | 0)).toFixed(sub_digits);
-                if(subDigits == 1) {
+                if (subDigits == 1) {
                     no = (no | 0) + 1;
-                    if(CONTINENTAL)
-                        val = ((no | 0)+'').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+                    if (CONTINENTAL)
+                        val = ((no | 0) + '').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
                     else
-                        val = ((no | 0)+'').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+                        val = ((no | 0) + '').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
                 }
                 val += (CONTINENTAL ? ',' : '.') + subDigits.substr(2);
             }
-            if(sub)
+            if (sub)
                 val = '-' + val;
-        
+
             return val;
         }
 
@@ -88,7 +122,8 @@ Next to simple cryptocurrency mining,
             data: {
                 serverStatus: params.serverStatus,
                 minPayoutFormatted: formatNo(params.serverStatus.minPayout),
-                payoutAmount: ''
+                payoutAmount: '',
+                network: 'polygon'
             },
             methods: {
                 close: () => {
@@ -98,26 +133,26 @@ Next to simple cryptocurrency mining,
                     e.preventDefault();
                     window.sendBackend('openTokenSale');
                 },
-                payOut: function() {
+                payOut: function () {
                     let amount = this.payoutAmount | 0;
-                    if(amount + '' !== this.payoutAmount || amount <= 0)
+                    if (amount + '' !== this.payoutAmount || amount <= 0)
                         alert('Please enter a integer larger than 0, without . and ,');
-                    else if(amount > this.serverStatus.deposit)
+                    else if (amount > this.serverStatus.deposit)
                         alert("You have " + formatNo(this.serverStatus.deposit, 2) + " MDSIM, which is less than the "
-                         + formatNo(amount, 2) + " MDSIM you are requesting to pay out.");
-                    else if(amount < this.serverStatus.minPayout)
+                            + formatNo(amount, 2) + " MDSIM you are requesting to pay out.");
+                    else if (amount < this.serverStatus.minPayout)
                         alert("The " + formatNo(amount, 2) + " MDSIM, which you are requesting to pay out is less than the minimum of "
-                        + formatNo(this.serverStatus.minPayout, 2) + " MDSIM.");
-                    else if(confirm("The Ethereum network fee for the transfer will be subtracted from the payout and swapping for ETH or stablecoin will also cost you additional fees.\n\nOn the other side, we believe it to be a good strategy to hold the MDSIM as they will rise in value on the long term because Neonious will run more highly paid computational research over time which will be processed with MDSIM.\n\nAre you sure you wish to pay out the amount?")) {
-                        window.sendBackend('depositPayOut', amount);
+                            + formatNo(this.serverStatus.minPayout, 2) + " MDSIM.");
+                    else {
+                        window.sendBackend('depositPayOut', {amount, network: this.network});
                         this.payoutAmount = '';
                     }
                 },
-                copyAddress: function() {
+                copyAddress: function () {
                     window.sendBackend('copyDepositAddress');
                     alert("The Ethereum address to send funds to is now in your clipboard, ready to be pasted.")
                 },
-                openNeoniousStats: function(e) {
+                openNeoniousStats: function (e) {
                     e.preventDefault();
                     window.sendBackend('openNeoniousStats');
                 }
@@ -129,7 +164,7 @@ Next to simple cryptocurrency mining,
         });
 
         window.onBackend((event, param) => {
-            if(event == 'serverStatusChanged') {
+            if (event == 'serverStatusChanged') {
                 App._data.serverStatus = param;
                 App._data.minPayoutFormatted = formatNo(param.minPayout);
             }
