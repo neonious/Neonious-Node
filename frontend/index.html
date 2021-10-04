@@ -90,8 +90,7 @@
       <div class="row">
         <div class="col-4">
           <div v-if="depositFormatted">
-            <b>Wallet:</b> {{depositFormatted}} MDSIM <small v-if="depositUSDFormatted">({{depositUSDFormatted}}
-              USD)</small>
+            <b>Wallet:</b> {{depositFormatted}} <small v-if="depositUSDFormatted">({{depositUSDFormatted}})</small>
           </div>
           <div v-if="!depositFormatted">
             <b>Wallet:</b> not set up
@@ -224,7 +223,7 @@
 
     const params = JSON.parse(decodeURIComponent(location.search.substr(1))); // skip ?
     let dateNow = new Date();
-    let lastToday = true;
+    let lastToday = true, depositFormattedLast = '0.00 MDSIM', depositUSDFormattedLast;
     for (let i = 0; i < params.log.length; i++) {
       let date = new Date(params.log[i].date * 1000);
       params.log[i].dateFormatted = date.toLocaleString();
@@ -232,6 +231,10 @@
           params.log[i].depositFormatted = params.log[i].earned ? formatNo(params.log[i].deposit, 2) + ' MDSIM' : '';
           params.log[i].earnedUSDFormatted = params.log[i].earned_usd ? formatNo(params.log[i].earned_usd, 2) + ' USD' : '';
           params.log[i].depositUSDFormatted = params.log[i].earned_usd ? formatNo(params.log[i].deposit_usd, 2) + ' USD' : '';
+          if(params.log[i].depositFormatted)
+            depositFormattedLast = params.log[i].depositFormatted;
+          if(params.log[i].depositUSDFormatted)
+            depositUSDFormattedLast = params.log[i].depositUSDFormatted;
       if (params.log[i].type == 0)
         lastToday = date.getUTCDate() == dateNow.getUTCDate();
     }
@@ -279,8 +282,8 @@
         serverStatus: params.serverStatus,
         log: params.log,
         deposit: params.log.length ? params.log[params.log.length - 1].deposit : 0,
-        depositUSDFormatted: params.serverStatus.rate_usd === undefined ? undefined : formatNo((params.log.length ? params.log[params.log.length - 1].deposit : 0) * params.serverStatus.rate_usd, 2),
-        depositFormatted: params.log.length ? params.log[params.log.length - 1].depositFormatted : '0.00',
+        depositUSDFormatted: depositUSDFormattedLast,
+        depositFormatted: depositFormattedLast,
         mineStatus: params.mineStatus,
         nextEarned: getNextEarned()
       },
@@ -324,7 +327,7 @@
         App._data.settingsData = param;
       if (event == 'logChanged') {
         let dateNow = new Date();
-        let lastToday = true;
+        let lastToday = true, depositFormattedLast = '0.00 MDSIM', depositUSDFormattedLast;
         for (let i = 0; i < param.length; i++) {
           let date = new Date(param[i].date * 1000);
           param[i].dateFormatted = date.toLocaleString();
@@ -332,6 +335,10 @@
           param[i].depositFormatted = param[i].earned ? formatNo(param[i].deposit, 2) + ' MDSIM' : '';
           param[i].earnedUSDFormatted = param[i].earned_usd ? formatNo(param[i].earned_usd, 2) + ' USD' : '';
           param[i].depositUSDFormatted = param[i].earned_usd ? formatNo(param[i].deposit_usd, 2) + ' USD' : '';
+          if(param[i].depositFormatted)
+            depositFormattedLast = param[i].depositFormatted;
+          if(param[i].depositUSDFormatted)
+            depositUSDFormattedLast = param[i].depositUSDFormatted;
           if (param[i].type == 0)
             lastToday = date.getUTCDate() == dateNow.getUTCDate();
         }
@@ -345,12 +352,11 @@
         App._data.nextEarned = getNextEarned();
         App._data.log = param;
         App._data.deposit = param.length ? param[param.length - 1].deposit : 0;
-        App._data.depositUSDFormatted = App._data.serverStatus.rate_usd === undefined ? undefined : formatNo((param.length ? param[param.length - 1].deposit : 0) * App._data.serverStatus.rate_usd, 2),
-          App._data.depositFormatted = param.length ? param[param.length - 1].depositFormatted : '0.00'
+        App._data.depositUSDFormatted = depositUSDFormattedLast;
+        App._data.depositFormatted = depositFormattedLast;
       }
       if (event == 'serverStatusChanged') {
-        App._data.depositUSDFormatted = param.rate_usd === undefined ? undefined : formatNo((App._data.log.length ? App._data.log[App._data.log.length - 1].deposit : 0) * param.rate_usd, 2),
-          App._data.serverStatus = param;
+        App._data.serverStatus = param;
       }
       if (event == 'mineStatusChanged') {
         App._data.mineStatus = param;
